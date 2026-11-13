@@ -736,6 +736,18 @@ td.minus {
 }
 .hand .card {
   box-shadow: -2px 1px 5px rgb(0 0 0 / 0.35);
+  /* Alle Handkarten auf dieselbe Ebene legen: Sonst schiebt der Filter der abgedunkelten
+     Karten diese vor ihre Nachbarn, und die Fächer-Reihenfolge stimmt nicht mehr. */
+  position: relative;
+  z-index: 0;
+}
+/* Wenn du dran bist, stehen die spielbaren Karten ein Stück heraus. */
+.hand--active .card--playable {
+  transform: translateY(-8px);
+}
+.hand--active .card--playable:hover,
+.hand--active .card--playable:focus-visible {
+  transform: translateY(-16px);
 }
 @media (min-width: 900px) {
   .hand {
