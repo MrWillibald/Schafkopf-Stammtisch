@@ -36,6 +36,9 @@ npm run typecheck
 
 Produktionsbuild: `npm run build && npm start` → http://localhost:3001
 
+Offline-Testversion (du gegen drei Computer, ohne Server, z. B. als statische Seite):
+`npm run build:offline` → `dist/offline/`
+
 ## Auf Render veröffentlichen
 
 1. Repository bei [render.com](https://render.com) verbinden → **New → Blueprint**.

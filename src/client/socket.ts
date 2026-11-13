@@ -1,7 +1,14 @@
 import { type Socket, io } from 'socket.io-client';
 import type { Ack, ClientToServer, ServerToClient } from '../shared/protocol';
 
-export const socket: Socket<ServerToClient, ClientToServer> = io({ transports: ['websocket', 'polling'] });
+import { createLocalSocket } from './localSocket';
+
+/** Offline-Testmodus: alles läuft im Browser, gegen Computer-Mitspieler. */
+export const OFFLINE = import.meta.env.VITE_OFFLINE === '1';
+
+export const socket: Socket<ServerToClient, ClientToServer> = OFFLINE
+  ? (createLocalSocket() as unknown as Socket<ServerToClient, ClientToServer>)
+  : io({ transports: ['websocket', 'polling'] });
 
 /** Ruft ein Socket-Event auf und liefert die Antwort als Promise. */
 export function call<T extends object = object>(fn: (ack: (r: Ack<T>) => void) => void): Promise<Ack<T>> {

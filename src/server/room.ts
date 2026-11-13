@@ -1,4 +1,3 @@
-import { randomBytes, randomUUID } from 'node:crypto';
 import {
   type Action,
   type HandState,
@@ -45,10 +44,16 @@ export interface RoomData {
 
 export class RoomError extends Error {}
 
+// Web Crypto gibt es in Node und im Browser – so läuft die Room-Logik auch offline im Browser.
 const ID_ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
 export function newRoomId(): string {
-  const bytes = randomBytes(10);
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(10));
   return Array.from(bytes, (b) => ID_ALPHABET[b % ID_ALPHABET.length]).join('');
+}
+
+function randomUUID(): string {
+  if (typeof globalThis.crypto.randomUUID === 'function') return globalThis.crypto.randomUUID();
+  return Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 const cleanName = (name: unknown, fallback: string): string => {
