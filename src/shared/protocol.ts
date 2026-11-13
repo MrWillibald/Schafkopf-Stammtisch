@@ -6,6 +6,7 @@ export interface PlayerInfo {
   connected: boolean;
   ready: boolean;
   isHost: boolean;
+  isBot: boolean;
 }
 
 export interface HistoryEntry {
@@ -47,6 +48,8 @@ export interface ClientToServer {
   ) => void;
   'room:join': (p: { roomId: string; token?: string; playerName?: string }, ack: (r: Ack<{ token: string }>) => void) => void;
   'room:rules': (rules: Rules, ack: (r: Ack) => void) => void;
+  'room:addBot': (ack: (r: Ack) => void) => void;
+  'room:removeBot': (seat: number, ack: (r: Ack) => void) => void;
   'game:start': (ack: (r: Ack) => void) => void;
   'game:action': (action: Action, ack: (r: Ack) => void) => void;
   'game:ready': (ack: (r: Ack) => void) => void;

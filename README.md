@@ -8,6 +8,7 @@ am echten Stammtisch treffen. Runde anlegen, Einladungslink teilen, spielen.
 - Legen bis 8-fach, Kontra/Re, Tout als Zusatzansage, Laufende, Schneider/Schwarz
 - Eigenes Blatt im Stil des bayerischen Bildes (Übersicht unter `/karten`)
 - Laufende Abrechnung mit Saldo pro Spieler, Ruhmeshalle für jede **Sie**
+- Computer-Mitspieler zum Testen oder Auffüllen freier Plätze (in der Lobby)
 - Wer die Seite neu lädt oder kurz die Verbindung verliert, sitzt sofort wieder am Tisch
 
 Die genauen Regeln stehen in [docs/REGELN.md](docs/REGELN.md).

@@ -840,6 +840,13 @@ td.minus {
   .topbar__title strong {
     font-size: 13px;
   }
+  .topbar {
+    font-size: 13px;
+    gap: 6px;
+  }
+  .topbar__game {
+    gap: 2px 6px;
+  }
   .center {
     min-height: 200px;
   }
@@ -905,4 +912,11 @@ td.minus {
   gap: 6px;
   justify-content: center;
   margin-bottom: 10px;
+}
+
+.seat-remove {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }

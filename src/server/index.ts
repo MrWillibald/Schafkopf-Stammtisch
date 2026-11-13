@@ -40,8 +40,34 @@ if (existsSync(CLIENT_DIR)) {
 const httpServer = createServer(app);
 const io: IO = new Server(httpServer, { maxHttpBufferSize: 64 * 1024 });
 
+/** Ein Timer pro Runde für den nächsten Zug eines Computer-Mitspielers. */
+const botTimers = new Map<string, NodeJS.Timeout>();
+
+function scheduleBots(room: Room) {
+  const id = room.data.id;
+  if (botTimers.has(id) || !room.botMove()) return;
+  const h = room.data.hand!;
+  // Nach einem fertigen Stich etwas länger warten, damit man ihn sieht.
+  const trickJustDone = h.phase === 'play' && h.trick?.cards.length === 0 && h.tricks.length > 0;
+  const delay = trickJustDone ? 1900 : h.phase === 'play' ? 900 : 700;
+  botTimers.set(
+    id,
+    setTimeout(() => {
+      botTimers.delete(id);
+      try {
+        room.runBot();
+      } catch (e) {
+        console.error('Bot hängt:', e);
+        return;
+      }
+      broadcast(room);
+    }, delay),
+  );
+}
+
 function broadcast(room: Room) {
   store.save(room.data);
+  scheduleBots(room);
   const ids = io.sockets.adapter.rooms.get(room.data.id);
   if (!ids) return;
   const isOnline = (t: string) => (online.get(t) ?? 0) > 0;
@@ -119,6 +145,22 @@ io.on('connection', (socket: ClientSocket) => {
     }),
   );
 
+  socket.on('room:addBot', (ack) =>
+    handle(ack, () => {
+      const [room, token] = currentRoom(socket);
+      room.addBot(token);
+      broadcast(room);
+    }),
+  );
+
+  socket.on('room:removeBot', (seat, ack) =>
+    handle(ack, () => {
+      const [room, token] = currentRoom(socket);
+      room.removeBot(token, Number(seat));
+      broadcast(room);
+    }),
+  );
+
   socket.on('game:start', (ack) =>
     handle(ack, () => {
       const [room, token] = currentRoom(socket);
@@ -148,7 +190,11 @@ io.on('connection', (socket: ClientSocket) => {
 
 async function main() {
   await store.init();
-  for (const data of await store.loadAll(ROOM_MAX_AGE_DAYS)) rooms.set(data.id, new Room(data));
+  for (const data of await store.loadAll(ROOM_MAX_AGE_DAYS)) {
+    const room = new Room(data);
+    rooms.set(data.id, room);
+    scheduleBots(room); // falls beim Neustart gerade ein Computer dran war
+  }
   httpServer.listen(PORT, () => {
     console.log(`Schafkopf-Stammtisch läuft auf http://localhost:${PORT} (${rooms.size} Runden geladen)`);
   });

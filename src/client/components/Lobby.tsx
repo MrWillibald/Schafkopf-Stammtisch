@@ -34,6 +34,16 @@ export function Lobby({ view }: { view: RoomView }) {
     setEditing(false);
   }
 
+  async function addBot() {
+    const r = await call((ack) => socket.emit('room:addBot', ack));
+    if (!r.ok) setError(r.error);
+  }
+
+  async function removeBot(seat: number) {
+    const r = await call((ack) => socket.emit('room:removeBot', seat, ack));
+    if (!r.ok) setError(r.error);
+  }
+
   async function start() {
     const r = await call((ack) => socket.emit('game:start', ack));
     if (!r.ok) setError(r.error);
@@ -68,7 +78,13 @@ export function Lobby({ view }: { view: RoomView }) {
                   <span className={`dot ${p.connected ? 'on' : ''}`} />
                   {p.name}
                   {p.isHost && <span className="tag">Gastgeber</span>}
+                  {p.isBot && <span className="tag">Computer</span>}
                   {p.seat === view.you.seat && <span className="tag tag--you">du</span>}
+                  {p.isBot && view.you.isHost && (
+                    <button className="link seat-remove" onClick={() => removeBot(p.seat)} aria-label={`${p.name} entfernen`}>
+                      entfernen
+                    </button>
+                  )}
                 </>
               ) : (
                 'frei …'
@@ -76,6 +92,11 @@ export function Lobby({ view }: { view: RoomView }) {
             </li>
           ))}
         </ol>
+        {view.you.isHost && !full && (
+          <button className="btn btn--big" onClick={addBot}>
+            + Computer-Mitspieler
+          </button>
+        )}
         {view.you.isHost ? (
           <button className="btn btn--primary btn--big" disabled={!full} onClick={start}>
             {full ? 'Spiel starten' : 'Warte auf Mitspieler …'}

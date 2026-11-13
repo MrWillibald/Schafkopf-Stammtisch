@@ -12,13 +12,18 @@ import {
   viewFor,
 } from '../engine';
 import type { HistoryEntry, PlayerInfo, RoomView, SieEntry } from '../shared/protocol';
+import { botDecide, botFallback } from './bot';
 
 export interface PlayerRecord {
   token: string;
   name: string;
   seat: number;
   ready: boolean;
+  /** Computer-Mitspieler */
+  bot?: boolean;
 }
+
+const BOT_NAMES = ['Xaver (PC)', 'Resi (PC)', 'Wastl (PC)', 'Burgl (PC)'];
 
 /** Alles, was zu einer Runde gespeichert wird (JSON-serialisierbar). */
 export interface RoomData {
@@ -107,6 +112,59 @@ export class Room {
     return p;
   }
 
+  /** Gastgeber füllt einen freien Platz mit einem Computer-Mitspieler. */
+  addBot(token: string) {
+    if (token !== this.data.hostToken) throw new RoomError('Nur der Gastgeber kann Computer-Mitspieler hinzufügen.');
+    if (this.data.status !== 'lobby') throw new RoomError('Das Spiel läuft schon.');
+    if (this.data.players.length >= PLAYERS) throw new RoomError('Die Runde ist schon voll.');
+    const taken = new Set(this.data.players.map((p) => p.name.toLowerCase()));
+    const name = BOT_NAMES.find((n) => !taken.has(n.toLowerCase())) ?? `PC ${this.data.players.length + 1}`;
+    this.data.players.push({ token: randomUUID(), name, seat: this.data.players.length, ready: true, bot: true });
+    this.touch();
+  }
+
+  /** Gastgeber entfernt einen Computer-Mitspieler wieder (nur vor dem Start). */
+  removeBot(token: string, seat: number) {
+    if (token !== this.data.hostToken) throw new RoomError('Nur der Gastgeber kann Mitspieler entfernen.');
+    if (this.data.status !== 'lobby') throw new RoomError('Das Spiel läuft schon.');
+    const p = this.data.players.find((x) => x.seat === seat);
+    if (!p?.bot) throw new RoomError('Nur Computer-Mitspieler können entfernt werden.');
+    this.data.players = this.data.players.filter((x) => x !== p).map((x, i) => ({ ...x, seat: i }));
+    this.touch();
+  }
+
+  /** Ist ein Computer-Mitspieler am Zug? Dann seine Aktion (sonst null). */
+  botMove(): { token: string; action: Action; fallback: Action | null } | null {
+    const hand = this.data.hand;
+    if (!hand || this.data.status !== 'playing' || hand.turn === null) return null;
+    const p = this.data.players.find((x) => x.seat === hand.turn);
+    if (!p?.bot) return null;
+    const view = viewFor(hand, p.seat);
+    const fallback = botFallback(view);
+    let action: Action | null = null;
+    try {
+      action = botDecide(view, this.data.rules);
+    } catch (e) {
+      console.error('Bot-Fehler:', e);
+    }
+    action ??= fallback;
+    return action ? { token: p.token, action, fallback } : null;
+  }
+
+  /** Führt den nächsten Bot-Zug aus. true, wenn etwas passiert ist. */
+  runBot(): boolean {
+    const move = this.botMove();
+    if (!move) return false;
+    try {
+      this.act(move.token, move.action);
+    } catch (e) {
+      if (!move.fallback) throw e;
+      console.error('Bot-Zug abgelehnt, nehme Ersatzzug:', e);
+      this.act(move.token, move.fallback);
+    }
+    return true;
+  }
+
   setRules(token: string, rules: unknown) {
     if (token !== this.data.hostToken) throw new RoomError('Nur wer die Runde angelegt hat, darf die Regeln ändern.');
     if (this.data.status !== 'lobby') throw new RoomError('Die Regeln können nur vor dem ersten Spiel geändert werden.');
@@ -127,7 +185,7 @@ export class Room {
     if (rotate) this.data.dealer = next(this.data.dealer);
     this.data.handNo++;
     this.data.hand = newHand(this.data.rules, this.data.dealer, this.rng);
-    for (const p of this.data.players) p.ready = false;
+    for (const p of this.data.players) p.ready = !!p.bot;
     this.touch();
   }
 
@@ -171,9 +229,10 @@ export class Room {
     const players: PlayerInfo[] = this.data.players.map((p) => ({
       seat: p.seat,
       name: p.name,
-      connected: connected(p.token),
+      connected: p.bot ? true : connected(p.token),
       ready: p.ready,
       isHost: p.token === this.data.hostToken,
+      isBot: !!p.bot,
     }));
     return {
       id: this.data.id,
