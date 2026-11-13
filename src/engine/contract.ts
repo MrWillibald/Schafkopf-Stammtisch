@@ -26,17 +26,19 @@ export interface Contract {
   tout?: boolean;
 }
 
-/** Reiz-Stufen: 1 = Sauspiel, 2 = Solo, 3 = Solo-Tout. */
-export type Level = 1 | 2 | 3;
+/** Reiz-Stufen: 1 = Sauspiel, 2 = Solo (Farbsolo, Wenz, Geier, …). Tout ist keine eigene Stufe. */
+export type Level = 1 | 2;
 
-export const LEVEL_NAMES: Record<Level, string> = { 1: 'Sauspiel', 2: 'Solo', 3: 'Tout' };
+export const LEVEL_NAMES: Record<Level, string> = { 1: 'Sauspiel', 2: 'Solo' };
 
 export const isSolo = (kind: GameKind): boolean => kind !== 'sauspiel' && kind !== 'ramsch';
 
 export function contractLevel(c: Contract): Level {
-  if (c.kind === 'sauspiel' || c.kind === 'ramsch') return 1;
-  return c.tout ? 3 : 2;
+  return c.kind === 'sauspiel' || c.kind === 'ramsch' ? 1 : 2;
 }
+
+/** Tout ist eine Zusatzansage zu einem Solo (inkl. Wenz/Geier), kein eigenes Spiel. */
+export const canAnnounceTout = (c: Contract, rules: Rules): boolean => rules.tout && isSolo(c.kind);
 
 /** Ober/Unter, die in diesem Spiel Trumpf sind – in Rangfolge. */
 export function trumpRanks(kind: GameKind): Rank[] {
@@ -167,19 +169,16 @@ export function canCall(hand: readonly Card[], suit: Suit): boolean {
   return hand.some((card) => effSuit(card, c) === suit);
 }
 
-/** Alle Spiele, die ein Spieler mit dieser Hand nach den Regeln ansagen darf. */
+/** Alle Spiele, die ein Spieler mit dieser Hand nach den Regeln ansagen darf (ohne Tout-Zusatz). */
 export function availableContracts(hand: readonly Card[], rules: Rules): Contract[] {
   const out: Contract[] = [];
   const g = rules.games;
   if (g.sauspiel) for (const s of ['E', 'G', 'S'] as Suit[]) if (canCall(hand, s)) out.push({ kind: 'sauspiel', suit: s });
-  const solos: Contract[] = [];
-  if (g.farbsolo) for (const s of SUITS) solos.push({ kind: 'farbsolo', suit: s });
-  if (g.wenz) solos.push({ kind: 'wenz' });
-  if (g.farbwenz) for (const s of SUITS) solos.push({ kind: 'farbwenz', suit: s });
-  if (g.geier) solos.push({ kind: 'geier' });
-  if (g.farbgeier) for (const s of SUITS) solos.push({ kind: 'farbgeier', suit: s });
-  out.push(...solos);
-  if (rules.tout) out.push(...solos.map((c) => ({ ...c, tout: true })));
+  if (g.farbsolo) for (const s of SUITS) out.push({ kind: 'farbsolo', suit: s });
+  if (g.wenz) out.push({ kind: 'wenz' });
+  if (g.farbwenz) for (const s of SUITS) out.push({ kind: 'farbwenz', suit: s });
+  if (g.geier) out.push({ kind: 'geier' });
+  if (g.farbgeier) for (const s of SUITS) out.push({ kind: 'farbgeier', suit: s });
   return out;
 }
 

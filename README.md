@@ -5,7 +5,8 @@ am echten Stammtisch treffen. Runde anlegen, Einladungslink teilen, spielen.
 
 - Läuft am Handy und am Rechner, ohne Account (Name + Einladungslink)
 - Langes oder kurzes Blatt, Spielarten und Tarif pro Runde einstellbar
-- Legen bis 8-fach, Kontra/Re, Tout, Laufende, Schneider/Schwarz
+- Legen bis 8-fach, Kontra/Re, Tout als Zusatzansage, Laufende, Schneider/Schwarz
+- Eigenes Blatt im Stil des bayerischen Bildes (Übersicht unter `/karten`)
 - Laufende Abrechnung mit Saldo pro Spieler, Ruhmeshalle für jede **Sie**
 - Wer die Seite neu lädt oder kurz die Verbindung verliert, sitzt sofort wieder am Tisch
 

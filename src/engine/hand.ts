@@ -12,7 +12,9 @@ import {
   type Contract,
   type Level,
   availableContracts,
+  canAnnounceTout,
   contractLevel,
+  contractName,
   effSuit,
   maxLevel,
   sameContract,
@@ -231,7 +233,7 @@ export function allowedActions(s: HandState, seat: number): AllowedActions {
   if (s.phase === 'duel' && myTurn && s.duel) {
     const ml = maxLevel(hand, s.rules);
     if (s.duel.awaiting === 'challenger') {
-      const raise: Level[] = ([2, 3] as Level[]).filter((l) => l > s.duel!.level && l <= ml);
+      const raise: Level[] = ([2] as Level[]).filter((l) => l > s.duel!.level && l <= ml);
       out.duel = { raise, hold: false, pass: true };
     } else {
       out.duel = { raise: [], hold: ml >= s.duel.level, pass: true };
@@ -373,7 +375,7 @@ function doDuel(s: HandState, seat: number, action: Extract<Action, { type: 'due
       d.level = action.level;
       d.awaiting = 'leader';
       s.turn = d.leader;
-      s.log.push({ seat, text: action.level === 3 ? 'hat ein Tout' : 'hat ein Solo' });
+      s.log.push({ seat, text: 'hat ein Solo' });
       return;
     }
     if (action.choice !== 'pass') fail('Dieses Gebot ist nicht möglich.');
@@ -414,9 +416,12 @@ function nextChallenger(s: HandState) {
 function doChoose(s: HandState, seat: number, contract: Contract) {
   requireTurn(s, seat, 'choose');
   const options = allowedActions(s, seat).choose ?? [];
-  const chosen = options.find((c) => sameContract(c, contract));
+  const tout = contract?.tout === true;
+  const chosen = options.find((c) => sameContract(c, { ...contract, tout: false }));
   if (!chosen) fail('Dieses Spiel kannst du nicht ansagen.');
-  s.contract = { ...chosen! };
+  if (tout && !canAnnounceTout(chosen!, s.rules)) fail('Tout kann nur zu einem Solo oder Wenz angesagt werden.');
+  s.contract = tout ? { ...chosen!, tout: true } : { ...chosen! };
+  s.log.push({ seat, text: `spielt ${contractName(s.contract)}` });
   if (chosen!.kind === 'sauspiel') {
     const ace = makeCard(chosen!.suit!, 'A');
     s.partner = s.hands.findIndex((h) => h.includes(ace));

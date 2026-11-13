@@ -97,7 +97,7 @@ describe('Legen und Doppeln', () => {
     // Duell: 1 fordert mit Solo, 0 hält, 1 gibt auf, 2 gibt auf
     expect(s.phase).toBe('duel');
     expect(s.turn).toBe(1);
-    expect(allowedActions(s, 1).duel?.raise).toEqual([2, 3]);
+    expect(allowedActions(s, 1).duel?.raise).toEqual([2]);
     s = applyAction(s, 1, { type: 'duel', choice: 'raise', level: 2 });
     s = applyAction(s, 0, { type: 'duel', choice: 'hold' });
     s = applyAction(s, 1, { type: 'duel', choice: 'pass' });
@@ -165,7 +165,7 @@ describe('Reizen', () => {
     s = applyAction(s, 2, { type: 'bid', play: false });
     s = applyAction(s, 3, { type: 'bid', play: false });
     // Sitz 1 kann nur mit einem Solo überbieten
-    expect(allowedActions(s, 1).duel).toEqual({ raise: [2, 3], hold: false, pass: true });
+    expect(allowedActions(s, 1).duel).toEqual({ raise: [2], hold: false, pass: true });
     s = applyAction(s, 1, { type: 'duel', choice: 'raise', level: 2 });
     s = applyAction(s, 0, { type: 'duel', choice: 'pass' });
     expect(s.phase).toBe('choose');
@@ -180,6 +180,32 @@ describe('Reizen', () => {
     // Ohne Soli: Sitz 1 (nur Herz und Unter) kann nichts spielen
     const only = rules({ games: { ...DEFAULT_RULES.games, farbsolo: false, wenz: false } });
     expect(availableContracts(HANDS[1], only)).toEqual([]);
+  });
+});
+
+describe('Tout', () => {
+  function chooseFor0(r: Rules): HandState {
+    let s = skipLegen(handFromCards(r, 3, HANDS));
+    s = applyAction(s, 0, { type: 'bid', play: true });
+    for (const p of [1, 2, 3]) s = applyAction(s, p, { type: 'bid', play: false });
+    return s;
+  }
+
+  it('ist eine Zusatzansage zu Solo oder Wenz, kein eigenes Spiel', () => {
+    const s = chooseFor0(rules());
+    const opts = allowedActions(s, 0).choose!;
+    expect(opts.some((c) => c.tout)).toBe(false);
+    const t = applyAction(s, 0, { type: 'choose', contract: { kind: 'wenz', tout: true } });
+    expect(t.contract).toEqual({ kind: 'wenz', tout: true });
+    const f = applyAction(s, 0, { type: 'choose', contract: { kind: 'farbsolo', suit: 'H', tout: true } });
+    expect(f.contract).toEqual({ kind: 'farbsolo', suit: 'H', tout: true });
+  });
+
+  it('geht nicht beim Sauspiel und nicht, wenn es abgeschaltet ist', () => {
+    const s = chooseFor0(rules());
+    expect(() => applyAction(s, 0, { type: 'choose', contract: { kind: 'sauspiel', suit: 'E', tout: true } })).toThrow(/Tout/);
+    const off = chooseFor0(rules({ tout: false }));
+    expect(() => applyAction(off, 0, { type: 'choose', contract: { kind: 'wenz', tout: true } })).toThrow(/Tout/);
   });
 });
 
@@ -349,7 +375,11 @@ describe('Zufallsspiele (Fuzz)', () => {
       opts.push({ type: 'duel', choice: 'pass' });
       return [seat, pick(opts)];
     }
-    if (a.choose) return [seat, { type: 'choose', contract: pick(a.choose) }];
+    if (a.choose) {
+      const c = pick(a.choose);
+      const tout = c.kind !== 'sauspiel' && rng() < 0.25;
+      return [seat, { type: 'choose', contract: tout ? { ...c, tout } : c }];
+    }
     return [seat, { type: 'play', card: pick(a.play) }];
   }
 

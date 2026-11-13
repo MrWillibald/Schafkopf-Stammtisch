@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CardGallery } from './CardFace';
 import { Home } from './Home';
 import { RoomPage } from './RoomPage';
 
@@ -19,5 +20,6 @@ export function App() {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+  if (window.location.pathname === '/karten') return <CardGallery />;
   return roomId ? <RoomPage key={roomId} roomId={roomId} /> : <Home />;
 }

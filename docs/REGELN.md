@@ -10,7 +10,7 @@ spielt: hier anpassen, dann im Code.
 |---|---|---|
 | Blatt | langes (32 Karten, 8 pro Spieler) / kurzes (24 Karten, 6 pro Spieler) | lang |
 | Spielarten | Sauspiel, Farbsolo, Wenz, Geier, Farbwenz, Farbgeier | Sauspiel, Farbsolo, Wenz |
-| Tout | an / aus | an |
+| Tout (Zusatzansage) | an / aus | an |
 | Wenn alle „weiter" sagen | Zusammenwerfen / Ramsch | Zusammenwerfen |
 | Tarif Sauspiel | in Cent | 10 ct |
 | Tarif Solo | in Cent (gilt für alle Soli inkl. Wenz/Geier) | 30 ct |
@@ -32,12 +32,14 @@ Die Regeln kann der Gastgeber bis zum ersten Spiel ändern.
 4. **Reizen**: Jeder sagt ab Vorhand „Ich spiel" oder „Weiter".
    - **Wer gelegt hat, muss „Ich spiel" sagen** (sofern er überhaupt ein erlaubtes Spiel hat).
    - Wollen mehrere spielen, hat der Vordere Vorrang. Ein Hinterer muss eine höhere Stufe
-     bieten (Sauspiel < Solo < Tout); der Vordere darf „mitgehen" (halten). Wer überboten
-     wird, muss nicht spielen – auch nicht, wenn er gelegt hat.
+     bieten (Sauspiel < Solo; Wenz, Geier usw. zählen als Solo); der Vordere darf
+     „mitgehen" (halten). Wer überboten wird, muss nicht spielen – auch nicht, wenn er
+     gelegt hat. Tout ist beim Reizen keine eigene Stufe.
    - Sagen alle weiter: je nach Einstellung zusammenwerfen oder Ramsch.
 5. **Ansagen**: Der Gewinner des Reizens wählt sein Spiel (mindestens die gebotene Stufe).
    Ein Sauspiel geht nur auf eine Farbsau (nicht Herz), die man nicht selbst hat, und nur
-   mit mindestens einer Karte dieser Farbe.
+   mit mindestens einer Karte dieser Farbe. Zu einem Solo oder Wenz/Geier kann er
+   zusätzlich **Tout** ansagen (kein eigenes Spiel, sondern eine Zusatzansage).
 6. **Kontra / Re**: Die Gegenspieler können Kontra geben, die Spielpartei danach Re –
    jeweils verdoppelnd und **solange der erste Stich nicht fertig ist**. Der Gesamtfaktor
    ist auf **16-fach** gedeckelt: Bei 8-fach gelegt geht also nur noch Kontra.

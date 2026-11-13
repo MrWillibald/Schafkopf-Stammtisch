@@ -1,4 +1,5 @@
-import { type Action, type Contract, LEVEL_NAMES, contractName } from '../../engine';
+import { useState } from 'react';
+import { type Action, type Contract, LEVEL_NAMES, contractName, isSolo } from '../../engine';
 import type { RoomView } from '../../shared/protocol';
 import { ResultPanel } from './ResultPanel';
 
@@ -14,10 +15,50 @@ interface Props {
 function groupContracts(options: Contract[]) {
   const groups: { title: string; items: Contract[] }[] = [
     { title: 'Sauspiel', items: options.filter((c) => c.kind === 'sauspiel') },
-    { title: 'Solo', items: options.filter((c) => c.kind !== 'sauspiel' && !c.tout) },
-    { title: 'Tout', items: options.filter((c) => c.tout) },
+    { title: 'Solo', items: options.filter((c) => c.kind === 'farbsolo') },
+    { title: 'Wenz & Geier', items: options.filter((c) => isSolo(c.kind) && c.kind !== 'farbsolo') },
   ];
   return groups.filter((g) => g.items.length > 0);
+}
+
+function ChooseContract({ options, toutAllowed, busy, act }: { options: Contract[]; toutAllowed: boolean; busy: boolean; act: Props['act'] }) {
+  const [tout, setTout] = useState(false);
+  const hasSolo = options.some((c) => isSolo(c.kind));
+  return (
+    <div className="actions actions--choose">
+      <p>Was spielst du?</p>
+      {groupContracts(options).map((g) => (
+        <div key={g.title} className="choose-group">
+          <span className="choose-group__title">{g.title}</span>
+          <div className="row row--wrap">
+            {g.items.map((c) => {
+              const withTout = tout && isSolo(c.kind);
+              return (
+                <button
+                  key={contractName(c)}
+                  className={`btn ${withTout ? 'btn--hot' : c.kind === 'sauspiel' ? 'btn--primary' : ''}`}
+                  disabled={busy || (tout && !isSolo(c.kind))}
+                  onClick={() => act({ type: 'choose', contract: withTout ? { ...c, tout: true } : c })}
+                >
+                  {contractName(withTout ? { ...c, tout: true } : c)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      {toutAllowed && hasSolo && (
+        <label className="tout-switch">
+          <input type="checkbox" checked={tout} onChange={(e) => setTout(e.target.checked)} />
+          <span className="tout-switch__track" aria-hidden="true" />
+          <span>
+            <strong>Tout ansagen</strong>
+            <small>zum Solo oder Wenz: alle Stiche nötig, zählt doppelt</small>
+          </span>
+        </label>
+      )}
+    </div>
+  );
 }
 
 export function ActionPanel({ view, act, ready, busy, name }: Props) {
@@ -63,7 +104,7 @@ export function ActionPanel({ view, act, ready, busy, name }: Props) {
       return (
         <div className="actions">
           <p>
-            {name(d.leader)} spielt {d.level === 1 ? 'auch' : `ein ${LEVEL_NAMES[d.level]}`} und sitzt vor dir. Hast du ein höheres Spiel?
+            {name(d.leader)} will auch spielen und sitzt vor dir. {d.level === 1 ? 'Hast du ein Solo?' : 'Mehr als ein Solo geht nicht.'}
           </p>
           <div className="row">
             {a.duel.raise.map((l) => (
@@ -90,28 +131,7 @@ export function ActionPanel({ view, act, ready, busy, name }: Props) {
   }
 
   if (a.choose) {
-    return (
-      <div className="actions actions--choose">
-        <p>Was spielst du?</p>
-        {groupContracts(a.choose).map((g) => (
-          <div key={g.title} className="choose-group">
-            <span className="choose-group__title">{g.title}</span>
-            <div className="row row--wrap">
-              {g.items.map((c) => (
-                <button
-                  key={contractName(c)}
-                  className={`btn ${c.kind === 'sauspiel' ? 'btn--primary' : ''}`}
-                  disabled={busy}
-                  onClick={() => act({ type: 'choose', contract: c })}
-                >
-                  {contractName(c)}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <ChooseContract options={a.choose} toutAllowed={view.rules.tout} busy={busy} act={act} />;
   }
 
   if (a.kontra || a.re) {
