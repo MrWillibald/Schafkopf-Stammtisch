@@ -98,19 +98,23 @@ const PIPS: Partial<Record<Rank, [number, number][]>> = {
   '10': [[19, 17], [41, 17], [30, 26], [19, 35], [41, 35], [19, 53], [41, 53], [30, 62], [19, 71], [41, 71]],
 };
 
-function Index({ text, suit, right = false }: { text: string; suit: Suit; right?: boolean }) {
+function Index({ text, suit }: { text: string; suit: Suit }) {
   const el = (
-    <text
-      x={right ? 55 : 5}
-      y="11"
-      fontSize="8.5"
-      fontWeight="700"
-      textAnchor={right ? 'end' : 'start'}
-      fill={INDEX_COLOR[suit]}
-      fontFamily="Georgia, 'Times New Roman', serif"
-    >
-      {text}
-    </text>
+    <g>
+      <text
+        x="8.2"
+        y="13.6"
+        fontSize={text.length > 1 ? 10.5 : 12.5}
+        fontWeight="700"
+        textAnchor="middle"
+        fill={INDEX_COLOR[suit]}
+        fontFamily="Georgia, 'Times New Roman', serif"
+        letterSpacing={text.length > 1 ? -0.6 : 0}
+      >
+        {text}
+      </text>
+      <SuitIcon suit={suit} x={8.2} y={21.6} scale={0.36} />
+    </g>
   );
   return (
     <>
@@ -129,9 +133,9 @@ function Bust({ suit, rank }: { suit: Suit; rank: 'O' | 'U' | 'K' }) {
       {/* König: Zepter */}
       {rank === 'K' && (
         <g>
-          <path d="M11.5 45 L 10.5 15" stroke="#8a6a10" strokeWidth="1.8" strokeLinecap="round" />
-          <circle cx="10.4" cy="13.4" r="2.3" fill={GOLD} stroke={INK} strokeWidth="0.5" />
-          <path d="M10.4 9.8 V 11.2 M9.7 10.5 H 11.1" stroke={INK} strokeWidth="0.5" />
+          <path d="M48.5 45 L 49.5 15" stroke="#8a6a10" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="49.6" cy="13.4" r="2.3" fill={GOLD} stroke={INK} strokeWidth="0.5" />
+          <path d="M49.6 9.8 V 11.2 M48.9 10.5 H 50.3" stroke={INK} strokeWidth="0.5" />
         </g>
       )}
       {/* Wams mit Schultern und Ärmeln */}
@@ -193,8 +197,8 @@ function Bust({ suit, rank }: { suit: Suit; rank: 'O' | 'U' | 'K' }) {
       )}
       {rank === 'O' && (
         <g>
-          <path d="M35 14.6 C 38.6 9.6, 43 7.8, 46 8.6 C 42.6 10.2, 40 12.4, 37.4 16.4 Z" fill="#f6f2e4" stroke={INK} strokeWidth="0.4" />
-          <path d="M37.6 12.4 L 41.4 9.8 M39 13.6 L 43.6 9.6" stroke={INK} strokeWidth="0.25" />
+          <path d="M29.6 12 C 27.4 8.4, 24.6 6.4, 21.6 6.6 C 23.8 8.4, 25.8 10.4, 27.6 12.8 Z" fill="#f6f2e4" stroke={INK} strokeWidth="0.4" />
+          <path d="M27.4 10.6 L 24.2 8 M28.6 11.4 L 25.8 7.6" stroke={INK} strokeWidth="0.25" />
           <path d="M22.4 17.2 C 22.4 10.4, 37.6 10.4, 37.6 17.2 Z" fill={c.hat} stroke={INK} strokeWidth="0.5" />
           <ellipse cx="30" cy="17.4" rx="10.6" ry="2.6" fill={c.hat} stroke={INK} strokeWidth="0.5" />
           <path d="M23 16.4 C 26 15.2, 34 15.2, 37 16.4" stroke={c.trim} strokeWidth="0.8" fill="none" />
@@ -210,9 +214,9 @@ function Bust({ suit, rank }: { suit: Suit; rank: 'O' | 'U' | 'K' }) {
       {/* Ober hält das Farbzeichen hoch, Unter auf Brusthöhe – wie im echten Blatt. */}
       {rank === 'O' && (
         <g>
-          <path d="M12.5 37 L 11 22" stroke={c.coat} strokeWidth="4.4" strokeLinecap="round" />
-          <circle cx="11" cy="20.6" r="2.1" fill={SKIN} stroke={INK} strokeWidth="0.45" />
-          <SuitIcon suit={suit} x={11.2} y={11.6} scale={0.56} />
+          <path d="M47.5 37 L 49 22" stroke={c.coat} strokeWidth="4.4" strokeLinecap="round" />
+          <circle cx="49" cy="20.6" r="2.1" fill={SKIN} stroke={INK} strokeWidth="0.45" />
+          <SuitIcon suit={suit} x={48.8} y={11.6} scale={0.56} />
         </g>
       )}
       {rank === 'U' && (
@@ -264,7 +268,7 @@ export function CardFace({ card, onClick, disabled, highlight, className = '' }:
           <Bust suit={suit} rank={rank} />
         </g>
         <path d="M3.4 45 H 56.6" stroke={INK} strokeWidth="0.6" />
-        <Index text={rank} suit={suit} right />
+        <Index text={rank} suit={suit} />
       </>
     );
   } else if (rank === 'A') {
@@ -272,6 +276,7 @@ export function CardFace({ card, onClick, disabled, highlight, className = '' }:
       <>
         <SuitIcon suit={suit} x={30} y={38} scale={1.6} />
         <Flourish color={INDEX_COLOR[suit]} />
+        <Index text="A" suit={suit} />
         <g transform="rotate(180 30 45)">
           <path d="M22 13 C 26 10.5, 34 10.5, 38 13" stroke={INDEX_COLOR[suit]} strokeWidth="0.9" fill="none" strokeLinecap="round" />
         </g>

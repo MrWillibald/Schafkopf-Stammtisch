@@ -543,7 +543,7 @@ button.card {
 }
 
 .trick {
-  --cw: clamp(56px, 15vw, 84px);
+  --cw: clamp(64px, 19vw, 100px);
   position: relative;
   width: calc(var(--cw) * 3.2);
   height: calc(var(--cw) * 3.3);
@@ -723,16 +723,24 @@ td.minus {
   flex-wrap: wrap;
   justify-content: center;
 }
+/* Handkarten als Fächer: jede Karte überdeckt die vorige, das Eckzeichen bleibt sichtbar. */
 .hand {
-  --cw: min(88px, calc((100vw - 24px) / var(--n, 8) - 4px));
+  --overlap: 0.42;
+  --cw: min(118px, calc((100vw - 24px) / (1 + (var(--n, 8) - 1) * (1 - var(--overlap)))));
   display: flex;
   justify-content: center;
-  gap: 4px;
-  padding-top: 12px;
+  padding-top: 14px;
 }
-@media (min-width: 1000px) {
+.hand .card + .card {
+  margin-left: calc(var(--cw) * -1 * var(--overlap));
+}
+.hand .card {
+  box-shadow: -2px 1px 5px rgb(0 0 0 / 0.35);
+}
+@media (min-width: 900px) {
   .hand {
-    --cw: min(88px, calc(976px / var(--n, 8) - 4px));
+    --overlap: 0.28;
+    --cw: min(128px, calc(min(100vw, 1000px) / (1 + (var(--n, 8) - 1) * (1 - var(--overlap))) - 4px));
   }
 }
 
@@ -824,8 +832,16 @@ td.minus {
 
 @media (max-width: 520px) {
   .felt {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'left top right'
+      'center center center';
     padding: 6px 4px;
+  }
+  .player--left,
+  .player--right {
+    align-self: start;
   }
   .player {
     padding: 4px;
@@ -848,7 +864,7 @@ td.minus {
     gap: 2px 6px;
   }
   .center {
-    min-height: 200px;
+    min-height: 230px;
   }
 }
 
