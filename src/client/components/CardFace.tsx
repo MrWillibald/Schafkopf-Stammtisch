@@ -20,8 +20,8 @@ const INDEX_COLOR: Record<Suit, string> = {
 
 /** Gewand der Figuren je Farbe: Rock, Hut. */
 const COSTUME: Record<Suit, { coat: string; hat: string; trim: string }> = {
-  E: { coat: '#3f6a2c', hat: '#9c2a20', trim: GOLD },
-  G: { coat: '#2b4f8f', hat: '#3c6b2c', trim: GOLD },
+  E: { coat: '#7a4a1e', hat: '#3f6a2c', trim: GOLD },
+  G: { coat: '#3a7a30', hat: '#9c2a20', trim: GOLD },
   H: { coat: '#a82630', hat: '#22427a', trim: GOLD },
   S: { coat: '#c58a1c', hat: '#a82630', trim: '#f6e3a0' },
 };
