@@ -21,8 +21,10 @@ export interface HandResult {
   multiplier: number;
   /** Wert pro Gegenspieler in Cent (inkl. Multiplikator). */
   value: number;
-  /** Gewinn/Verlust je Sitz in Cent. Summe ist 0. */
+  /** Gewinn/Verlust je Sitz in Cent. Summe plus stockDelta ist 0. */
   payouts: number[];
+  /** Veränderung des Stocks (positiv: eingezahlt, negativ: ausbezahlt). */
+  stockDelta: number;
   /** Ramsch: wer verloren hat. */
   losers: number[];
   /** Ramsch: Durchmarsch durch diesen Sitz. */
@@ -35,7 +37,7 @@ export interface HandResult {
 
 function baseMultiplier(s: HandState): number {
   const n = s.legen.filter((x) => x === true).length + (s.kontra !== null ? 1 : 0) + (s.re !== null ? 1 : 0);
-  return Math.min(MAX_MULTIPLIER, 2 ** n);
+  return Math.min(MAX_MULTIPLIER, 2 ** n) * 2 ** (s.bock ?? 0);
 }
 
 /** Laufende: ununterbrochene höchste Trümpfe einer Partei (ab Mindestanzahl). */
@@ -75,6 +77,7 @@ export function scoreHand(s: HandState, special: { sie?: number; redeal?: boolea
     multiplier,
     value: 0,
     payouts: [0, 0, 0, 0],
+    stockDelta: 0,
     losers: [],
     durchmarsch: null,
     sie: null,
@@ -82,7 +85,13 @@ export function scoreHand(s: HandState, special: { sie?: number; redeal?: boolea
   };
 
   if (special.sie !== undefined) return { ...result, kind: 'sie', sie: special.sie, multiplier: 1 };
-  if (special.redeal) return { ...result, kind: 'redeal', multiplier: 1 };
+  if (special.redeal) {
+    if (s.rules.redeal === 'stock') {
+      const fee = s.rules.tariff.stock;
+      return { ...result, kind: 'redeal', multiplier: 1, payouts: [-fee, -fee, -fee, -fee], stockDelta: 4 * fee };
+    }
+    return { ...result, kind: 'redeal', multiplier: 1 };
+  }
 
   const c = s.contract!;
   const t = s.rules.tariff;
@@ -130,6 +139,13 @@ export function scoreHand(s: HandState, special: { sie?: number; redeal?: boolea
     const mine = team.includes(p);
     if (isSolo(c.kind)) result.payouts[p] = mine ? 3 * value * sign : -value * sign;
     else result.payouts[p] = mine ? value * sign : -value * sign;
+  }
+
+  // Stock: geht an die Spielpartei des nächsten gewonnenen Sauspiels.
+  const stock = s.stock ?? 0;
+  if (c.kind === 'sauspiel' && won && stock > 0) {
+    for (const p of team) result.payouts[p] += stock / team.length;
+    result.stockDelta = -stock;
   }
 
   return { ...result, declarerAugen: declAugen, won, schwarz, schneider, laufende, value };

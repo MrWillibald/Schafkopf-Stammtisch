@@ -26,7 +26,7 @@ export interface Contract {
   tout?: boolean;
 }
 
-/** Reiz-Stufen: 1 = Sauspiel, 2 = Solo (Farbsolo, Wenz, Geier, …). Tout ist keine eigene Stufe. */
+/** Reiz-Stufen: 1 = Sauspiel, 2 = Solo (Solo, Wenz, Geier, …). Tout ist keine eigene Stufe. */
 export type Level = 1 | 2;
 
 export const LEVEL_NAMES: Record<Level, string> = { 1: 'Sauspiel', 2: 'Solo' };
@@ -37,8 +37,8 @@ export function contractLevel(c: Contract): Level {
   return c.kind === 'sauspiel' || c.kind === 'ramsch' ? 1 : 2;
 }
 
-/** Tout ist eine Zusatzansage zu einem Solo (inkl. Wenz/Geier), kein eigenes Spiel. */
-export const canAnnounceTout = (c: Contract, rules: Rules): boolean => rules.tout && isSolo(c.kind);
+/** Tout ist eine Zusatzansage, die zu jedem Solo (inkl. Wenz, Geier, …) gemacht werden kann – nicht zum Sauspiel. */
+export const canAnnounceTout = (c: Contract): boolean => isSolo(c.kind);
 
 /** Ober/Unter, die in diesem Spiel Trumpf sind – in Rangfolge. */
 export function trumpRanks(kind: GameKind): Rank[] {

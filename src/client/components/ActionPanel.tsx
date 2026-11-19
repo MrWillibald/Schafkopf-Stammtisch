@@ -21,7 +21,7 @@ function groupContracts(options: Contract[]) {
   return groups.filter((g) => g.items.length > 0);
 }
 
-function ChooseContract({ options, toutAllowed, busy, act }: { options: Contract[]; toutAllowed: boolean; busy: boolean; act: Props['act'] }) {
+function ChooseContract({ options, busy, act }: { options: Contract[]; busy: boolean; act: Props['act'] }) {
   const [tout, setTout] = useState(false);
   const hasSolo = options.some((c) => isSolo(c.kind));
   return (
@@ -47,13 +47,13 @@ function ChooseContract({ options, toutAllowed, busy, act }: { options: Contract
           </div>
         </div>
       ))}
-      {toutAllowed && hasSolo && (
+      {hasSolo && (
         <label className="tout-switch">
           <input type="checkbox" checked={tout} onChange={(e) => setTout(e.target.checked)} />
           <span className="tout-switch__track" aria-hidden="true" />
           <span>
             <strong>Tout ansagen</strong>
-            <small>zum Solo oder Wenz: alle Stiche nötig, zählt doppelt</small>
+            <small>zu jedem Solo: alle Stiche nötig, zählt doppelt</small>
           </span>
         </label>
       )}
@@ -131,7 +131,7 @@ export function ActionPanel({ view, act, ready, busy, name }: Props) {
   }
 
   if (a.choose) {
-    return <ChooseContract options={a.choose} toutAllowed={view.rules.tout} busy={busy} act={act} />;
+    return <ChooseContract options={a.choose} busy={busy} act={act} />;
   }
 
   if (a.kontra || a.re) {

@@ -9,7 +9,7 @@ function describe(e: HistoryEntry, name: (s: number | null) => string): string {
     case 'sie':
       return `SIE von ${name(r.sie)}`;
     case 'redeal':
-      return 'zusammengeworfen';
+      return r.stockDelta > 0 ? `zusammengeworfen – ${euro(r.stockDelta)} in den Stock` : 'zusammengeworfen';
     case 'ramsch':
       return r.durchmarsch !== null ? `Ramsch – Durchmarsch ${name(r.durchmarsch)}` : 'Ramsch';
     default: {
@@ -17,7 +17,8 @@ function describe(e: HistoryEntry, name: (s: number | null) => string): string {
       const extra = [r.schwarz ? 'schwarz' : r.schneider ? 'Schneider' : '', r.laufende ? `${r.laufende} L.` : '', r.multiplier > 1 ? `×${r.multiplier}` : '']
         .filter(Boolean)
         .join(', ');
-      return `${contractName(r.contract!)} (${who}) ${r.won ? '✓' : '✗'}${extra ? ` – ${extra}` : ''}`;
+      const stock = r.stockDelta < 0 ? ` + Stock ${euro(-r.stockDelta)}` : '';
+      return `${contractName(r.contract!)} (${who}) ${r.won ? '✓' : '✗'}${extra ? ` – ${extra}` : ''}${stock}`;
     }
   }
 }
@@ -46,6 +47,12 @@ export function ScoreSheet({ view, onClose }: { view: RoomView; onClose: () => v
             </div>
           ))}
         </div>
+
+        {(view.stock > 0 || view.rules.redeal === 'stock') && (
+          <p className="stock-line">
+            Im Stock: <strong>{euro(view.stock)}</strong> – geht an das nächste gewonnene Sauspiel.
+          </p>
+        )}
 
         <div className="sheet-scroll">
           <table className="sheet">

@@ -948,3 +948,46 @@ td.minus {
   font-weight: 400;
   color: var(--muted);
 }
+
+.redeal-options {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.redeal-options__title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+.radio input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green);
+  flex: none;
+}
+.radio small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+.chip-stock {
+  background: var(--gold);
+  color: #3a2a00;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  opacity: 1 !important;
+  white-space: nowrap;
+}
+
+.stock-line {
+  margin: 0 0 12px;
+}

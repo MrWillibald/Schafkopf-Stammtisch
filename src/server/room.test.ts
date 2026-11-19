@@ -8,6 +8,54 @@ function setup() {
   return { room, tokens };
 }
 
+function playOut(room: Room, tokens: string[], declarerWants: (seat: number, dealer: number) => boolean) {
+  let guard = 0;
+  while (room.data.hand!.phase !== 'done') {
+    const h = room.data.hand!;
+    const seat = h.turn!;
+    const a = allowedActions(h, seat);
+    let action: Action;
+    if (a.legen) action = { type: 'legen', yes: false };
+    else if (a.bid) action = { type: 'bid', play: a.bid.spiel && declarerWants(seat, h.dealer) };
+    else if (a.duel) action = { type: 'duel', choice: 'pass' };
+    else if (a.choose) action = { type: 'choose', contract: a.choose[0] };
+    else action = { type: 'play', card: a.play[0] };
+    room.act(tokens[seat], action);
+    if (++guard > 100) throw new Error('hängt');
+  }
+  for (const t of tokens) room.ready(t);
+}
+
+describe('Zusammenwerfen über mehrere Spiele', () => {
+  it('doppelt: das nächste gespielte Spiel zählt doppelt, mehrfach hintereinander verdoppelt weiter', () => {
+    const room = Room.create('x', { ...DEFAULT_RULES, redeal: 'double' });
+    const tokens = ['A', 'B', 'C', 'D'].map((n) => room.join(undefined, n).token);
+    room.start(tokens[0]);
+    playOut(room, tokens, () => false);
+    expect(room.data.pendingDoubles).toBe(1);
+    playOut(room, tokens, () => false);
+    expect(room.data.pendingDoubles).toBe(2);
+    expect(room.data.hand!.bock).toBe(2);
+    playOut(room, tokens, (seat, dealer) => seat === (dealer + 1) % 4);
+    const last = room.data.history.at(-1)!.result;
+    expect(last.kind).toBe('game');
+    expect(last.multiplier).toBe(4);
+    expect(room.data.pendingDoubles).toBe(0);
+  });
+
+  it('Stock: wird eingezahlt und bleibt in Summe ausgeglichen', () => {
+    const room = Room.create('x', { ...DEFAULT_RULES, redeal: 'stock' });
+    const tokens = ['A', 'B', 'C', 'D'].map((n) => room.join(undefined, n).token);
+    room.start(tokens[0]);
+    playOut(room, tokens, () => false);
+    playOut(room, tokens, () => false);
+    expect(room.data.stock).toBe(80);
+    expect(room.data.balance).toEqual([-20, -20, -20, -20]);
+    for (let i = 0; i < 20; i++) playOut(room, tokens, (seat, dealer) => seat === (dealer + 1) % 4);
+    expect(room.data.balance.reduce((a, b) => a + b, 0) + (room.data.stock ?? 0)).toBe(0);
+  });
+});
+
 describe('Room', () => {
   it('nimmt genau vier Spieler auf und erkennt Wiederverbinden', () => {
     const { room, tokens } = setup();

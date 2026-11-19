@@ -40,6 +40,10 @@ export interface RoomData {
   history: HistoryEntry[];
   balance: number[];
   sie: SieEntry[];
+  /** Betrag im Stock (Cent). */
+  stock?: number;
+  /** Verdopplungen, die aus Zusammenwerfen noch für das nächste Spiel anstehen. */
+  pendingDoubles?: number;
 }
 
 export class RoomError extends Error {}
@@ -84,6 +88,8 @@ export class Room {
       history: [],
       balance: [0, 0, 0, 0],
       sie: [],
+      stock: 0,
+      pendingDoubles: 0,
     });
   }
 
@@ -189,7 +195,10 @@ export class Room {
   private dealNext(rotate: boolean) {
     if (rotate) this.data.dealer = next(this.data.dealer);
     this.data.handNo++;
-    this.data.hand = newHand(this.data.rules, this.data.dealer, this.rng);
+    this.data.hand = newHand(this.data.rules, this.data.dealer, this.rng, {
+      bock: this.data.pendingDoubles ?? 0,
+      stock: this.data.stock ?? 0,
+    });
     for (const p of this.data.players) p.ready = !!p.bot;
     this.touch();
   }
@@ -212,8 +221,21 @@ export class Room {
     const hand = this.data.hand!;
     const result = hand.result!;
     for (let i = 0; i < PLAYERS; i++) this.data.balance[i] += result.payouts[i];
+    this.data.stock = (this.data.stock ?? 0) + result.stockDelta;
+    // Verdopplung nach Zusammenwerfen: gilt für das nächste tatsächlich gespielte Spiel.
+    const bock = hand.bock ?? 0;
+    if (result.kind === 'redeal') this.data.pendingDoubles = bock + (this.data.rules.redeal === 'double' ? 1 : 0);
+    else if (result.kind === 'sie') this.data.pendingDoubles = bock;
+    else this.data.pendingDoubles = 0;
     const at = new Date().toISOString();
-    this.data.history.push({ no: this.data.handNo, dealer: hand.dealer, at, result, balance: [...this.data.balance] });
+    this.data.history.push({
+      no: this.data.handNo,
+      dealer: hand.dealer,
+      at,
+      result,
+      balance: [...this.data.balance],
+      stock: this.data.stock,
+    });
     if (result.sie !== null) {
       const name = this.data.players[result.sie]?.name ?? '?';
       this.data.sie.push({ name, at, cards: result.hands[result.sie] });
@@ -254,6 +276,8 @@ export class Room {
       ),
       balance: this.data.balance,
       sie: this.data.sie,
+      stock: this.data.stock ?? 0,
+      pendingDoubles: this.data.pendingDoubles ?? 0,
     };
   }
 }

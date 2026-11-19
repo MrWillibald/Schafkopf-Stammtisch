@@ -23,6 +23,9 @@ export function ResultPanel({ view, ready, name }: Props) {
     headline = `${name(r.sie)} hat eine SIE! Ab in die Ruhmeshalle.`;
   } else if (r.kind === 'redeal') {
     headline = 'Alle weiter – es wird zusammengeworfen.';
+    if (r.stockDelta > 0) details.push(`Jeder zahlt ${euro(r.stockDelta / 4)} in den Stock – jetzt ${euro(view.stock)}`);
+    else if (view.pendingDoubles > 0)
+      details.push(view.pendingDoubles === 1 ? 'Das nächste Spiel zählt doppelt.' : `Das nächste Spiel zählt ${2 ** view.pendingDoubles}-fach.`);
   } else if (r.kind === 'ramsch') {
     if (r.durchmarsch !== null) headline = `Durchmarsch von ${name(r.durchmarsch)}!`;
     else if (r.losers.length === 4) headline = 'Ramsch: Gleichstand – niemand zahlt.';
@@ -37,13 +40,14 @@ export function ResultPanel({ view, ready, name }: Props) {
     if (r.laufende) details.push(`${r.laufende} Laufende`);
     if (r.multiplier > 1) details.push(`×${r.multiplier}`);
     details.push(`${euro(r.value)} pro Gegenspieler`);
+    if (r.stockDelta < 0) details.push(`dazu der Stock: ${euro(-r.stockDelta)}`);
   }
 
   return (
     <div className="actions result">
       <p className={`result__headline ${r.kind === 'sie' ? 'result__headline--sie' : ''}`}>{headline}</p>
       {details.length > 0 && <p className="result__details">{details.join(' · ')}</p>}
-      {r.kind !== 'redeal' && r.kind !== 'sie' && (
+      {r.kind !== 'sie' && r.payouts.some((x) => x !== 0) && (
         <div className="result__payouts">
           {[0, 1, 2, 3].map((s) => (
             <div key={s} className={r.payouts[s] > 0 ? 'plus' : r.payouts[s] < 0 ? 'minus' : ''}>

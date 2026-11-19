@@ -11,19 +11,26 @@ export interface Rules {
     farbwenz: boolean;
     farbgeier: boolean;
   };
-  /** Tout bei Soli erlaubt (verdoppelt den Spielwert). */
-  tout: boolean;
   /** Was passiert, wenn alle "weiter" sagen. */
   allPass: 'ramsch' | 'redeal';
+  /**
+   * Folge des Zusammenwerfens:
+   * - none: nichts
+   * - double: das nächste Spiel zählt doppelt (mehrmals Zusammenwerfen hintereinander verdoppelt weiter)
+   * - stock: jeder zahlt `tariff.stock` in den Stock; das nächste gewonnene Sauspiel bekommt ihn
+   */
+  redeal: 'none' | 'double' | 'stock';
   tariff: {
     /** Grundtarif Sauspiel (und Ramsch). */
     game: number;
-    /** Grundtarif Solo (Farbsolo, Wenz, Geier, Farbwenz, Farbgeier). */
+    /** Grundtarif Solo (Solo, Wenz, Geier, Farbwenz, Farbgeier). */
     solo: number;
     /** Pro Laufendem. */
     laufende: number;
     /** Zuschlag für Schneider bzw. Schwarz (nicht kumulativ). */
     schneider: number;
+    /** Einzahlung pro Spieler in den Stock beim Zusammenwerfen. */
+    stock: number;
   };
   /** Laufende zählen ab ... (normale Spiele). */
   laufendeMin: number;
@@ -46,13 +53,14 @@ export const DEFAULT_RULES: Rules = {
     farbwenz: false,
     farbgeier: false,
   },
-  tout: true,
   allPass: 'redeal',
+  redeal: 'none',
   tariff: {
     game: 10,
     solo: 30,
     laufende: 10,
     schneider: 10,
+    stock: 10,
   },
   laufendeMin: 3,
   laufendeMinWenzGeier: 2,
@@ -82,13 +90,14 @@ export function sanitizeRules(input: unknown): Rules {
   return {
     deck: r.deck === 'short' ? 'short' : 'long',
     games,
-    tout: bool(r.tout, d.tout),
     allPass: r.allPass === 'ramsch' ? 'ramsch' : 'redeal',
+    redeal: r.redeal === 'double' || r.redeal === 'stock' ? r.redeal : 'none',
     tariff: {
       game: clampInt(t.game, 0, 10000, d.tariff.game),
       solo: clampInt(t.solo, 0, 10000, d.tariff.solo),
       laufende: clampInt(t.laufende, 0, 10000, d.tariff.laufende),
       schneider: clampInt(t.schneider, 0, 10000, d.tariff.schneider),
+      stock: clampInt(t.stock, 0, 10000, d.tariff.stock),
     },
     laufendeMin: clampInt(r.laufendeMin, 1, 8, d.laufendeMin),
     laufendeMinWenzGeier: clampInt(r.laufendeMinWenzGeier, 1, 8, d.laufendeMinWenzGeier),

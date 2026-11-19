@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Action, type Trick, contractName, sortHand } from '../../engine';
 import type { RoomView } from '../../shared/protocol';
+import { euro } from '../format';
 import { call, socket } from '../socket';
 import { ActionPanel } from './ActionPanel';
 import { CardBack, CardFace } from './CardFace';
@@ -129,7 +130,13 @@ export function Table({ view }: { view: RoomView }) {
           ) : (
             <span>{h.phase === 'legen' ? 'Legen' : h.phase === 'done' ? '' : 'Reizen'}</span>
           )}
-          {h.multiplier > 1 && <span className="mult">×{h.multiplier}</span>}
+          {h.multiplier > 1 && (
+            <span className="mult" title={h.bock ? 'inkl. Verdopplung nach Zusammenwerfen' : undefined}>
+              ×{h.multiplier}
+              {h.bock > 0 && ' (doppelt)'}
+            </span>
+          )}
+          {view.stock > 0 && <span className="chip-stock">Stock {euro(view.stock)}</span>}
         </div>
         <div className="topbar__actions">
           <button className="btn btn--small" disabled={!h.lastTrick} onClick={() => setPeekLast((x) => !x)}>

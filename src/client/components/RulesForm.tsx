@@ -8,7 +8,7 @@ interface Props {
 
 const GAME_LABELS: [keyof Rules['games'], string][] = [
   ['sauspiel', 'Sauspiel'],
-  ['farbsolo', 'Farbsolo'],
+  ['farbsolo', 'Solo'],
   ['wenz', 'Wenz'],
   ['geier', 'Geier'],
   ['farbwenz', 'Farbwenz'],
@@ -69,11 +69,8 @@ export function RulesForm({ rules, onChange, disabled }: Props) {
               {label}
             </label>
           ))}
-          <label className="check">
-            <input type="checkbox" checked={rules.tout} onChange={(e) => set({ tout: e.target.checked })} />
-            Tout (×2)
-          </label>
         </div>
+        <p className="hint">Tout kann zu jedem Solo angesagt werden und zählt doppelt.</p>
       </fieldset>
 
       <fieldset disabled={disabled}>
@@ -88,6 +85,29 @@ export function RulesForm({ rules, onChange, disabled }: Props) {
             Ramsch
           </label>
         </div>
+        {rules.allPass === 'redeal' && (
+          <div className="redeal-options">
+            <span className="redeal-options__title">Nach dem Zusammenwerfen</span>
+            {(
+              [
+                ['none', 'Nichts', 'Es wird einfach neu gegeben.'],
+                ['double', 'Nächstes Spiel doppelt', 'Wird mehrmals hintereinander zusammengeworfen, verdoppelt es sich weiter.'],
+                ['stock', 'Stock', 'Jeder zahlt in den Stock. Das nächste gewonnene Sauspiel bekommt ihn.'],
+              ] as const
+            ).map(([value, label, help]) => (
+              <label key={value} className="radio">
+                <input type="radio" name="redeal" checked={rules.redeal === value} onChange={() => set({ redeal: value })} />
+                <span>
+                  {label}
+                  <small>{help}</small>
+                </span>
+              </label>
+            ))}
+            {rules.redeal === 'stock' && (
+              <CentInput label="Einzahlung pro Spieler" value={rules.tariff.stock} onChange={(v) => setTariff('stock', v)} />
+            )}
+          </div>
+        )}
       </fieldset>
 
       <fieldset disabled={disabled}>

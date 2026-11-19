@@ -9,9 +9,10 @@ spielt: hier anpassen, dann im Code.
 | Einstellung | Auswahl | Standard |
 |---|---|---|
 | Blatt | langes (32 Karten, 8 pro Spieler) / kurzes (24 Karten, 6 pro Spieler) | lang |
-| Spielarten | Sauspiel, Farbsolo, Wenz, Geier, Farbwenz, Farbgeier | Sauspiel, Farbsolo, Wenz |
-| Tout (Zusatzansage) | an / aus | an |
+| Spielarten | Sauspiel, Solo, Wenz, Geier, Farbwenz, Farbgeier | Sauspiel, Solo, Wenz |
 | Wenn alle „weiter" sagen | Zusammenwerfen / Ramsch | Zusammenwerfen |
+| Nach dem Zusammenwerfen | nichts / nächstes Spiel doppelt / Stock | nichts |
+| Stock | Einzahlung pro Spieler in Cent | 10 ct |
 | Tarif Sauspiel | in Cent | 10 ct |
 | Tarif Solo | in Cent (gilt für alle Soli inkl. Wenz/Geier) | 30 ct |
 | Laufende | in Cent pro Laufendem | 10 ct |
@@ -39,7 +40,7 @@ Die Regeln kann der Gastgeber bis zum ersten Spiel ändern.
 5. **Ansagen**: Der Gewinner des Reizens wählt sein Spiel (mindestens die gebotene Stufe).
    Ein Sauspiel geht nur auf eine Farbsau (nicht Herz), die man nicht selbst hat, und nur
    mit mindestens einer Karte dieser Farbe. Zu einem Solo oder Wenz/Geier kann er
-   zusätzlich **Tout** ansagen (kein eigenes Spiel, sondern eine Zusatzansage).
+   zusätzlich **Tout** ansagen (kein eigenes Spiel, sondern eine Zusatzansage; nicht zum Sauspiel).
 6. **Kontra / Re**: Die Gegenspieler können Kontra geben, die Spielpartei danach Re –
    jeweils verdoppelnd und **solange der erste Stich nicht fertig ist**. Der Gesamtfaktor
    ist auf **16-fach** gedeckelt: Bei 8-fach gelegt geht also nur noch Kontra.
@@ -50,7 +51,7 @@ Die Regeln kann der Gastgeber bis zum ersten Spiel ändern.
 | Spiel | Trümpfe (höchster zuerst) |
 |---|---|
 | Sauspiel, Ramsch | Ober (E G H S), Unter (E G H S), Herz A 10 K 9 8 7 |
-| Farbsolo | Ober, Unter, Trumpffarbe A 10 K 9 8 7 |
+| Solo | Ober, Unter, Trumpffarbe A 10 K 9 8 7 |
 | Wenz | nur die vier Unter; Ober zählt als Farbkarte zwischen König und Neun |
 | Farbwenz | Unter, dann Trumpffarbe A 10 K O 9 8 7 |
 | Geier | nur die vier Ober; Unter zählt als Farbkarte zwischen König und Neun |
@@ -76,6 +77,21 @@ Die Regeln kann der Gastgeber bis zum ersten Spiel ändern.
 - **Wert** = (Grundtarif + Schneider/Schwarz + Laufende × Tarif) × 2^(Legen + Kontra + Re),
   höchstens ×16.
 - **Tout**: Grundtarif + Laufende, alles **×2**. Kein Schneider/Schwarz-Zuschlag.
+
+## Zusammenwerfen
+
+Sagen alle „weiter" und ist Zusammenwerfen eingestellt, wird neu gegeben. Was danach passiert,
+ist einstellbar:
+
+- **Nichts**: einfach neu geben.
+- **Nächstes Spiel doppelt**: Das nächste tatsächlich gespielte Spiel zählt doppelt. Wird
+  mehrmals hintereinander zusammengeworfen, verdoppelt es sich weiter (×2, ×4, …). Diese
+  Verdopplung kommt **zusätzlich** zu Legen/Kontra/Re und zählt nicht zum 16-fach-Deckel –
+  Kontra bleibt also möglich, solange Legen allein unter 16-fach liegt. Eine Sie verbraucht
+  die Verdopplung nicht.
+- **Stock**: Jeder zahlt den eingestellten Betrag in den Stock. Der Stock wird mit dem
+  **nächsten gewonnenen Sauspiel** ausbezahlt und zu gleichen Teilen an die Spielpartei
+  verteilt. Verlorene Sauspiele, Soli und Ramsch lassen den Stock liegen.
 - **Sauspiel**: Jeder der Spielpartei bekommt bzw. zahlt den Wert von je einem Gegner.
 - **Solo**: Der Solist bekommt bzw. zahlt den Wert von jedem der drei Gegner.
 - **Ramsch** (falls eingestellt): Wer die meisten Augen hat, zahlt jedem anderen den

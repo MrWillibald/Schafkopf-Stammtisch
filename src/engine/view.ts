@@ -30,6 +30,10 @@ export interface PlayerView {
   kontra: number | null;
   re: number | null;
   multiplier: number;
+  /** Verdopplungen aus vorherigem Zusammenwerfen. */
+  bock: number;
+  /** Stock zu Beginn des Spiels (Cent). */
+  stock: number;
   trick: Trick | null;
   lastTrick: Trick | null;
   tricksPlayed: number;
@@ -62,6 +66,8 @@ export function viewFor(s: HandState, seat: number): PlayerView {
     kontra: s.kontra,
     re: s.re,
     multiplier: multiplier(s),
+    bock: s.bock ?? 0,
+    stock: s.stock ?? 0,
     trick: s.trick,
     lastTrick: s.tricks.length ? s.tricks[s.tricks.length - 1] : null,
     tricksPlayed: s.tricks.length,

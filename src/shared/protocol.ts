@@ -16,6 +16,8 @@ export interface HistoryEntry {
   result: HandResult;
   /** Kontostand je Sitz nach diesem Spiel (Cent). */
   balance: number[];
+  /** Stock nach diesem Spiel (Cent). */
+  stock?: number;
 }
 
 /** Ruhmeshalle: jede "Sie" wird verewigt. */
@@ -37,6 +39,10 @@ export interface RoomView {
   history: HistoryEntry[];
   balance: number[];
   sie: SieEntry[];
+  /** Betrag im Stock (Cent). */
+  stock: number;
+  /** Verdopplungen aus Zusammenwerfen, die für das nächste Spiel anstehen. */
+  pendingDoubles: number;
 }
 
 export type Ack<T = object> = ({ ok: true } & T) | { ok: false; error: string };

@@ -73,6 +73,10 @@ export interface HandState {
   partner: number | null;
   /** Ist der Partner (durch Zugeben der Rufsau) öffentlich bekannt? */
   partnerKnown: boolean;
+  /** Zusätzliche Verdopplungen aus vorherigem Zusammenwerfen (zählen nicht zum 16-fach-Deckel). */
+  bock: number;
+  /** Betrag im Stock zu Beginn dieses Spiels (Cent). */
+  stock: number;
   kontra: number | null;
   re: number | null;
   trick: Trick | null;
@@ -101,7 +105,14 @@ const fail = (msg: string): never => {
 
 export const vorhand = (s: Pick<HandState, 'dealer'>): number => next(s.dealer);
 
-export function newHand(rules: Rules, dealer: number, rng: Rng = Math.random): HandState {
+export interface HandOptions {
+  /** Verdopplungen aus vorherigem Zusammenwerfen. */
+  bock?: number;
+  /** Aktueller Stock in Cent. */
+  stock?: number;
+}
+
+export function newHand(rules: Rules, dealer: number, rng: Rng = Math.random, opts: HandOptions = {}): HandState {
   const deck = shuffle(makeDeck(rules.deck), rng);
   const per = deck.length / PLAYERS;
   const first = firstDealSize(rules.deck);
@@ -128,6 +139,8 @@ export function newHand(rules: Rules, dealer: number, rng: Rng = Math.random): H
     contract: null,
     partner: null,
     partnerKnown: false,
+    bock: opts.bock ?? 0,
+    stock: opts.stock ?? 0,
     kontra: null,
     re: null,
     trick: null,
@@ -149,9 +162,15 @@ export function handFromCards(rules: Rules, dealer: number, cards: Card[][]): Ha
 
 export const legenCount = (s: HandState): number => s.legen.filter((x) => x === true).length;
 
-export function multiplier(s: HandState): number {
+/** Faktor aus Legen, Kontra und Re – gedeckelt auf 16-fach. */
+export function capMultiplier(s: HandState): number {
   const doublings = legenCount(s) + (s.kontra !== null ? 1 : 0) + (s.re !== null ? 1 : 0);
   return Math.min(MAX_MULTIPLIER, 2 ** doublings);
+}
+
+/** Gesamtfaktor inkl. Verdopplung durch vorheriges Zusammenwerfen. */
+export function multiplier(s: HandState): number {
+  return capMultiplier(s) * 2 ** (s.bock ?? 0);
 }
 
 /** Sitze der Spielpartei (Spieler + ggf. Partner). */
@@ -217,7 +236,7 @@ function canKontraOrRe(s: HandState): boolean {
     s.contract !== null &&
     s.contract.kind !== 'ramsch' &&
     s.tricks.length === 0 &&
-    multiplier(s) < MAX_MULTIPLIER
+    capMultiplier(s) < MAX_MULTIPLIER
   );
 }
 
@@ -419,7 +438,7 @@ function doChoose(s: HandState, seat: number, contract: Contract) {
   const tout = contract?.tout === true;
   const chosen = options.find((c) => sameContract(c, { ...contract, tout: false }));
   if (!chosen) fail('Dieses Spiel kannst du nicht ansagen.');
-  if (tout && !canAnnounceTout(chosen!, s.rules)) fail('Tout kann nur zu einem Solo oder Wenz angesagt werden.');
+  if (tout && !canAnnounceTout(chosen!)) fail('Tout kann nur zu einem Solo angesagt werden, nicht zum Sauspiel.');
   s.contract = tout ? { ...chosen!, tout: true } : { ...chosen! };
   s.log.push({ seat, text: `spielt ${contractName(s.contract)}` });
   if (chosen!.kind === 'sauspiel') {

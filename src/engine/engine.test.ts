@@ -201,11 +201,62 @@ describe('Tout', () => {
     expect(f.contract).toEqual({ kind: 'farbsolo', suit: 'H', tout: true });
   });
 
-  it('geht nicht beim Sauspiel und nicht, wenn es abgeschaltet ist', () => {
+  it('geht nicht beim Sauspiel', () => {
     const s = chooseFor0(rules());
     expect(() => applyAction(s, 0, { type: 'choose', contract: { kind: 'sauspiel', suit: 'E', tout: true } })).toThrow(/Tout/);
-    const off = chooseFor0(rules({ tout: false }));
-    expect(() => applyAction(off, 0, { type: 'choose', contract: { kind: 'wenz', tout: true } })).toThrow(/Tout/);
+  });
+
+  it('geht zu jedem Solo, auch zu Geier und Farbwenz', () => {
+    const all = rules({ games: { sauspiel: true, farbsolo: true, wenz: true, geier: true, farbwenz: true, farbgeier: true } });
+    const s = chooseFor0(all);
+    for (const c of allowedActions(s, 0).choose!.filter((x) => x.kind !== 'sauspiel')) {
+      expect(applyAction(s, 0, { type: 'choose', contract: { ...c, tout: true } }).contract?.tout).toBe(true);
+    }
+  });
+});
+
+describe('Zusammenwerfen: doppelt und Stock', () => {
+  const won = (patch: Partial<HandState>): HandState => {
+    const s = skipLegen(handFromCards(rules(), 3, HANDS));
+    const tricks = Array.from({ length: 8 }, () => ({ leader: 0, cards: ['H7', 'H8', 'H9', 'EA'] as Card[], winner: 0 }));
+    return { ...s, contract: { kind: 'sauspiel', suit: 'E' }, declarer: 0, partner: 2, tricks, ...patch };
+  };
+
+  it('Verdopplung aus Zusammenwerfen zählt zusätzlich zum 16-fach-Deckel', () => {
+    let s = skipLegen(handFromCards(rules(), 3, HANDS));
+    s = applyAction(s, 0, { type: 'bid', play: true });
+    s = applyAction(s, 1, { type: 'bid', play: false });
+    s = applyAction(s, 2, { type: 'bid', play: false });
+    s = applyAction(s, 3, { type: 'bid', play: false });
+    s = { ...s, bock: 1, legen: [true, true, true, false] }; // 8-fach gelegt (hier direkt gesetzt)
+    s = applyAction(s, 0, { type: 'choose', contract: { kind: 'sauspiel', suit: 'E' } });
+    expect(multiplier(s)).toBe(16);
+    s = applyAction(s, 1, { type: 'kontra' }); // Kontra ist noch erlaubt: Legen allein ergibt 8-fach
+    expect(multiplier(s)).toBe(32);
+  });
+
+  it('Stock: beim Zusammenwerfen zahlt jeder ein', () => {
+    let s = skipLegen(handFromCards(rules({ redeal: 'stock' }), 3, HANDS));
+    for (const p of [0, 1, 2, 3]) s = applyAction(s, p, { type: 'bid', play: false });
+    expect(s.result?.payouts).toEqual([-10, -10, -10, -10]);
+    expect(s.result?.stockDelta).toBe(40);
+  });
+
+  it('Stock geht an das gewonnene Sauspiel, nicht an ein Solo oder ein verlorenes Sauspiel', () => {
+    const r = scoreHand(won({ stock: 40 }));
+    expect(r.won).toBe(true);
+    expect(r.stockDelta).toBe(-40);
+    expect(r.payouts[0] - r.value).toBe(20);
+    expect(r.payouts[2] - r.value).toBe(20);
+    expect(r.payouts.reduce((a, b) => a + b, 0) + r.stockDelta).toBe(0);
+
+    const lost = scoreHand(won({ stock: 40, tricks: [] }));
+    expect(lost.won).toBe(false);
+    expect(lost.stockDelta).toBe(0);
+
+    const solo = scoreHand(won({ stock: 40, contract: { kind: 'farbsolo', suit: 'H' }, partner: null }));
+    expect(solo.won).toBe(true);
+    expect(solo.stockDelta).toBe(0);
   });
 });
 
@@ -401,7 +452,7 @@ describe('Zufallsspiele (Fuzz)', () => {
           if (++steps > 200) throw new Error('Spiel endet nicht');
         }
         const res = s.result!;
-        expect(res.payouts.reduce((a, b) => a + b, 0)).toBe(0);
+        expect(res.payouts.reduce((a, b) => a + b, 0) + res.stockDelta).toBe(0);
         if (res.kind === 'game' || res.kind === 'ramsch') {
           expect(res.augen.reduce((a, b) => a + b, 0)).toBe(120);
           expect(res.multiplier).toBeLessThanOrEqual(16);
