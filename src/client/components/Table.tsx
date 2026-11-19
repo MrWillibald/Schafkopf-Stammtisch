@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type Action, type Trick, contractName, sortHand } from '../../engine';
 import type { RoomView } from '../../shared/protocol';
 import { euro } from '../format';
@@ -17,22 +17,29 @@ export function Table({ view }: { view: RoomView }) {
 
   const [sheet, setSheet] = useState(false);
   const [peekLast, setPeekLast] = useState(false);
-  const [flash, setFlash] = useState<Trick | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const prevTricks = useRef(h.tricksPlayed);
 
   // Abgeschlossenen Stich kurz liegen lassen, damit jeder sieht, wer ihn bekommt.
+  // Direkt aus dem Zustand abgeleitet (kein Zwischenbild ohne Karten): Der fertige Stich
+  // wird gezeigt, bis für genau diesen Stich die Anzeigezeit abgelaufen ist.
+  const [flashDoneFor, setFlashDoneFor] = useState(h.tricksPlayed);
   useEffect(() => {
-    const before = prevTricks.current;
-    prevTricks.current = h.tricksPlayed;
-    if (h.tricksPlayed > before && h.lastTrick) {
-      setFlash(h.lastTrick);
-      const t = setTimeout(() => setFlash(null), 1800);
-      return () => clearTimeout(t);
-    }
-    if (h.tricksPlayed === 0) setFlash(null);
-  }, [h.tricksPlayed, h.lastTrick]);
+    const n = h.tricksPlayed;
+    const t = setTimeout(() => setFlashDoneFor(n), 1800);
+    return () => clearTimeout(t);
+  }, [h.tricksPlayed]);
+  const flashing = h.tricksPlayed > 0 && flashDoneFor !== h.tricksPlayed;
+
+  // "Letzter Stich" ist nur ein kurzer Blick: schließt sich, sobald weitergespielt wird
+  // oder nach ein paar Sekunden – sonst bliebe die Mitte auf dem alten Stich stehen.
+  const trickCards = h.trick?.cards.length ?? 0;
+  useEffect(() => setPeekLast(false), [trickCards, h.tricksPlayed]);
+  useEffect(() => {
+    if (!peekLast) return;
+    const t = setTimeout(() => setPeekLast(false), 4000);
+    return () => clearTimeout(t);
+  }, [peekLast]);
 
   useEffect(() => {
     if (!error) return;
@@ -54,7 +61,7 @@ export function Table({ view }: { view: RoomView }) {
   }
 
   const current = h.trick && h.trick.cards.length > 0 ? h.trick : null;
-  const shown: Trick | null = peekLast ? h.lastTrick : (current ?? flash);
+  const shown: Trick | null = peekLast ? h.lastTrick : (current ?? (flashing ? h.lastTrick : null));
   const myTurnToPlay = h.phase === 'play' && h.turn === me;
   const hand = sortHand(h.hand, h.contract);
   const legal = new Set(h.allowed.play);
@@ -164,7 +171,12 @@ export function Table({ view }: { view: RoomView }) {
                   />
                 );
               })}
-              {shown.winner !== undefined && <div className="trick__label">Stich für {name(shown.winner)}</div>}
+              {shown.winner !== undefined && (
+                <div className="trick__label">
+                  {peekLast ? 'Letzter Stich – ging an ' : 'Stich für '}
+                  {name(shown.winner)}
+                </div>
+              )}
             </div>
           ) : (
             <div className="status">{statusText}</div>
