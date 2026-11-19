@@ -23,6 +23,8 @@ export interface HistoryEntry {
 /** Ruhmeshalle: jede "Sie" wird verewigt. */
 export interface SieEntry {
   name: string;
+  /** Platz am Tisch – damit die Sie beim Umbenennen beim richtigen Spieler bleibt. */
+  seat?: number;
   at: string;
   cards: Card[];
 }
@@ -56,6 +58,8 @@ export interface ClientToServer {
   'room:rules': (rules: Rules, ack: (r: Ack) => void) => void;
   'room:addBot': (ack: (r: Ack) => void) => void;
   'room:removeBot': (seat: number, ack: (r: Ack) => void) => void;
+  /** Eigenen Namen ändern – oder (nur Gastgeber) den eines Computer-Mitspielers über `seat`. */
+  'room:rename': (p: { name: string; seat?: number }, ack: (r: Ack) => void) => void;
   'game:start': (ack: (r: Ack) => void) => void;
   'game:action': (action: Action, ack: (r: Ack) => void) => void;
   'game:ready': (ack: (r: Ack) => void) => void;

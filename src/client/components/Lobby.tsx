@@ -4,6 +4,7 @@ import type { RoomView } from '../../shared/protocol';
 import { rulesSummary } from '../format';
 import { call, socket } from '../socket';
 import { navigate } from './App';
+import { RenameDialog } from './RenameDialog';
 import { RulesForm } from './RulesForm';
 
 export function Lobby({ view }: { view: RoomView }) {
@@ -12,6 +13,7 @@ export function Lobby({ view }: { view: RoomView }) {
   const [editing, setEditing] = useState(false);
   const [rules, setRules] = useState<Rules>(view.rules);
   const [error, setError] = useState('');
+  const [renaming, setRenaming] = useState<{ name: string; seat?: number } | null>(null);
   useEffect(() => setRules(view.rules), [view.rules]);
 
   async function copy() {
@@ -80,11 +82,22 @@ export function Lobby({ view }: { view: RoomView }) {
                   {p.isHost && <span className="tag">Gastgeber</span>}
                   {p.isBot && <span className="tag">Computer</span>}
                   {p.seat === view.you.seat && <span className="tag tag--you">du</span>}
-                  {p.isBot && view.you.isHost && (
-                    <button className="link seat-remove" onClick={() => removeBot(p.seat)} aria-label={`${p.name} entfernen`}>
-                      entfernen
-                    </button>
-                  )}
+                  <span className="seat-actions">
+                    {(p.seat === view.you.seat || (p.isBot && view.you.isHost)) && (
+                      <button
+                        className="link"
+                        onClick={() => setRenaming({ name: p.name, seat: p.seat === view.you.seat ? undefined : p.seat })}
+                        aria-label={`${p.name} umbenennen`}
+                      >
+                        umbenennen
+                      </button>
+                    )}
+                    {p.isBot && view.you.isHost && (
+                      <button className="link" onClick={() => removeBot(p.seat)} aria-label={`${p.name} entfernen`}>
+                        entfernen
+                      </button>
+                    )}
+                  </span>
                 </>
               ) : (
                 'frei …'
@@ -126,6 +139,7 @@ export function Lobby({ view }: { view: RoomView }) {
           </>
         )}
       </section>
+      {renaming && <RenameDialog current={renaming.name} seat={renaming.seat} onClose={() => setRenaming(null)} />}
     </main>
   );
 }

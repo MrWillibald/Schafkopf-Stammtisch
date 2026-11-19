@@ -62,6 +62,8 @@ export function createLocalSocket() {
       }),
     'room:addBot': (_a, ack) => handle(ack, () => (room!.addBot(token), broadcast())),
     'room:removeBot': ([seat], ack) => handle(ack, () => (room!.removeBot(token, Number(seat)), broadcast())),
+    'room:rename': ([p], ack) =>
+      handle(ack, () => (room!.rename(token, p?.name, typeof p?.seat === 'number' ? p.seat : undefined), broadcast())),
     'room:rules': ([rules], ack) => handle(ack, () => (room!.setRules(token, rules), broadcast())),
     'game:start': (_a, ack) => handle(ack, () => (room!.start(token), broadcast())),
     'game:action': ([action], ack) => handle(ack, () => (room!.act(token, action), broadcast())),

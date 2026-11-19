@@ -26,6 +26,42 @@ function playOut(room: Room, tokens: string[], declarerWants: (seat: number, dea
   for (const t of tokens) room.ready(t);
 }
 
+describe('Umbenennen', () => {
+  it('jeder ändert seinen eigenen Namen, doppelte Namen sind verboten', () => {
+    const { room, tokens } = setup();
+    room.rename(tokens[1], '  Hias  der Zweite ');
+    expect(room.data.players[1].name).toBe('Hias der Zweite');
+    expect(() => room.rename(tokens[1], 'sepp')).toThrow(/vergeben/);
+    expect(() => room.rename(tokens[1], '   ')).toThrow(/Namen/);
+    // Groß-/Kleinschreibung des eigenen Namens darf man ändern
+    room.rename(tokens[0], 'SEPP');
+    expect(room.data.players[0].name).toBe('SEPP');
+  });
+
+  it('fremde Namen nur der Gastgeber und nur bei Computer-Mitspielern', () => {
+    const room = Room.create('x', DEFAULT_RULES);
+    const host = room.join(undefined, 'Sepp').token;
+    const guest = room.join(undefined, 'Hias').token;
+    room.addBot(host);
+    expect(() => room.rename(guest, 'Hacker', 0)).toThrow(/eigenen/);
+    expect(() => room.rename(guest, 'Bot', 2)).toThrow(/eigenen/);
+    expect(() => room.rename(host, 'Hiasl', 1)).toThrow(/eigenen/);
+    room.rename(host, 'Kare (PC)', 2);
+    expect(room.data.players[2].name).toBe('Kare (PC)');
+  });
+
+  it('Ruhmeshalle wandert mit, Verlauf zeigt den neuen Namen', () => {
+    const { room, tokens } = setup();
+    room.data.sie.push({ name: 'Vroni', seat: 2, at: '2026-01-01', cards: [] });
+    room.data.sie.push({ name: 'Gustl', at: '2026-01-02', cards: [] }); // alter Eintrag ohne Platz
+    room.rename(tokens[2], 'Veronika');
+    room.rename(tokens[3], 'Gustav');
+    expect(room.data.sie.map((e) => e.name)).toEqual(['Veronika', 'Gustav']);
+    const v = room.view(tokens[0], () => true);
+    expect(v.players.find((p) => p.seat === 2)?.name).toBe('Veronika');
+  });
+});
+
 describe('Zusammenwerfen über mehrere Spiele', () => {
   it('doppelt: das nächste gespielte Spiel zählt doppelt, mehrfach hintereinander verdoppelt weiter', () => {
     const room = Room.create('x', { ...DEFAULT_RULES, redeal: 'double' });

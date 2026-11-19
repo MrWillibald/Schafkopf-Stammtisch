@@ -153,6 +153,14 @@ io.on('connection', (socket: ClientSocket) => {
     }),
   );
 
+  socket.on('room:rename', (p, ack) =>
+    handle(ack, () => {
+      const [room, token] = currentRoom(socket);
+      room.rename(token, p?.name, typeof p?.seat === 'number' ? p.seat : undefined);
+      broadcast(room);
+    }),
+  );
+
   socket.on('room:removeBot', (seat, ack) =>
     handle(ack, () => {
       const [room, token] = currentRoom(socket);
