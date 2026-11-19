@@ -241,6 +241,13 @@ function canKontraOrRe(s: HandState): boolean {
   );
 }
 
+/** Hat `seat` in diesem Spiel schon eine Karte gespielt? */
+export function hasPlayedCard(s: HandState, seat: number): boolean {
+  if (s.tricks.length > 0) return true;
+  if (!s.trick) return false;
+  return (seat - s.trick.leader + PLAYERS) % PLAYERS < s.trick.cards.length;
+}
+
 export function allowedActions(s: HandState, seat: number): AllowedActions {
   const myTurn = s.turn === seat;
   const out: AllowedActions = { legen: false, bid: null, duel: null, choose: null, kontra: false, re: false, play: [] };
@@ -264,7 +271,8 @@ export function allowedActions(s: HandState, seat: number): AllowedActions {
   }
   if (canKontraOrRe(s)) {
     const team = declarerTeam(s);
-    out.kontra = s.kontra === null && !team.includes(seat);
+    // Kontra nur, solange man selbst noch keine Karte gespielt hat.
+    out.kontra = s.kontra === null && !team.includes(seat) && !hasPlayedCard(s, seat);
     out.re = s.kontra !== null && s.re === null && team.includes(seat);
   }
   out.play = legalCards(s, seat);

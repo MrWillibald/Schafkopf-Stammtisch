@@ -42,8 +42,9 @@ Die Regeln kann der Gastgeber bis zum ersten Spiel ändern.
    Ein Sauspiel geht nur auf eine Farbsau (nicht Herz), die man nicht selbst hat, und nur
    mit mindestens einer Karte dieser Farbe. Zu einem Solo oder Wenz/Geier kann er
    zusätzlich **Tout** ansagen (kein eigenes Spiel, sondern eine Zusatzansage; nicht zum Sauspiel).
-6. **Kontra / Re**: Die Gegenspieler können Kontra geben, die Spielpartei danach Re –
-   jeweils verdoppelnd und **solange der erste Stich nicht fertig ist**. Der Gesamtfaktor
+6. **Kontra / Re**: Ein Gegenspieler kann Kontra geben, **solange er selbst noch keine Karte
+   gespielt hat**. Die Spielpartei kann danach Re geben, solange der erste Stich nicht fertig
+   ist. Beides verdoppelt. Der Gesamtfaktor
    ist auf **16-fach** gedeckelt: Bei 8-fach geht also nur noch Kontra, kein Re mehr.
 7. **Spielen**: Farbe bzw. Trumpf muss bedient werden.
 

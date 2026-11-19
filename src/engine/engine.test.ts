@@ -215,6 +215,25 @@ describe('Tout', () => {
   });
 });
 
+describe('Kontra-Zeitpunkt', () => {
+  it('Kontra nur, solange man selbst noch keine Karte gespielt hat', () => {
+    let s = skipLegen(handFromCards(rules(), 3, HANDS));
+    s = applyAction(s, 0, { type: 'bid', play: true });
+    for (const p of [1, 2, 3]) s = applyAction(s, p, { type: 'bid', play: false });
+    s = applyAction(s, 0, { type: 'choose', contract: { kind: 'farbsolo', suit: 'H' } });
+    // Vor der ersten Karte: alle Gegenspieler dürfen
+    expect([1, 2, 3].map((p) => allowedActions(s, p).kontra)).toEqual([true, true, true]);
+    s = applyAction(s, 0, { type: 'play', card: allowedActions(s, 0).play[0] });
+    s = applyAction(s, 1, { type: 'play', card: allowedActions(s, 1).play[0] });
+    // Sitz 1 hat schon gespielt, Sitz 2 und 3 noch nicht
+    expect([1, 2, 3].map((p) => allowedActions(s, p).kontra)).toEqual([false, true, true]);
+    expect(() => applyAction(s, 1, { type: 'kontra' })).toThrow(/Kontra/);
+    s = applyAction(s, 3, { type: 'kontra' });
+    // Re für den Spieler geht weiterhin bis zum Ende des ersten Stichs
+    expect(allowedActions(s, 0).re).toBe(true);
+  });
+});
+
 describe('Zusammenwerfen: doppelt und Stock', () => {
   const won = (patch: Partial<HandState>): HandState => {
     const s = skipLegen(handFromCards(rules(), 3, HANDS));
