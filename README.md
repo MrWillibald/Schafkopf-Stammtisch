@@ -39,7 +39,20 @@ Produktionsbuild: `npm run build && npm start` → http://localhost:3001
 Offline-Testversion (du gegen drei Computer, ohne Server, z. B. als statische Seite):
 `npm run build:offline` → `dist/offline/`
 
-## Auf Render veröffentlichen
+## Auf einem eigenen Server betreiben (empfohlen)
+
+Für einen kleinen VPS (z. B. bei netcup) liegt alles bereit: `Dockerfile`,
+`docker-compose.yml` mit Caddy für automatisches HTTPS und Skripte für Updates und
+Sicherungen. Die Schritt-für-Schritt-Anleitung steht in [docs/VPS.md](docs/VPS.md).
+
+Kurzfassung auf dem Server:
+
+```bash
+cp .env.example .env   # DOMAIN=schafkopf.deine-domain.de eintragen
+docker compose up -d --build
+```
+
+## Alternativ: auf Render veröffentlichen
 
 1. Repository bei [render.com](https://render.com) verbinden → **New → Blueprint**.
    Die Datei `render.yaml` richtet den Web-Service automatisch ein.

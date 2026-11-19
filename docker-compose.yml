@@ -1,0 +1,32 @@
+# Startet die App und davor Caddy, der automatisch ein HTTPS-Zertifikat holt.
+# Vorher: .env mit DOMAIN=... anlegen (siehe .env.example und docs/VPS.md).
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    init: true
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - schafkopf-data:/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Bitte DOMAIN in der Datei .env setzen}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+volumes:
+  schafkopf-data:
+  caddy-data:
+  caddy-config:
