@@ -418,7 +418,7 @@ button.card {
 .table {
   min-height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto 1fr auto;
   color: #fff;
   max-width: 1000px;
   margin: 0 auto;
@@ -446,11 +446,33 @@ button.card {
 }
 .topbar__game {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
   justify-content: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
   text-align: center;
+}
+/* Jede Zeile genau eine Zeile hoch – lange Spielnamen werden gekürzt statt umzubrechen. */
+.topbar__line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+strong.topbar__line {
+  display: block;
+}
+.topbar__who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .topbar__game span {
   opacity: 0.85;
@@ -469,6 +491,7 @@ button.card {
 }
 
 .felt {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr) minmax(0, 1fr);
   grid-template-rows: auto 1fr;
@@ -521,10 +544,15 @@ button.card {
   gap: 4px;
   flex-wrap: wrap;
   justify-content: center;
+  align-content: flex-start;
+  /* Platz für bis zu drei Zeilen Kennzeichen ist immer reserviert. */
+  height: 58px;
+  overflow: hidden;
 }
 .player__backs {
   display: flex;
   margin-top: 2px;
+  height: 21px;
 }
 
 .center {
@@ -990,4 +1018,64 @@ td.minus {
 
 .stock-line {
   margin: 0 0 12px;
+}
+
+/* ---------- Ruhiges Layout: Abfragen schweben, nichts verschiebt sich ---------- */
+
+.action-layer {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.action-layer .actions {
+  pointer-events: auto;
+  margin: 0;
+  width: 100%;
+  max-width: 640px;
+  max-height: min(72vh, 560px);
+  overflow-y: auto;
+  box-shadow: 0 10px 32px rgb(0 0 0 / 0.45);
+  animation: rise 0.15s ease-out;
+}
+.action-layer .actions--empty {
+  display: none;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .action-layer .actions {
+    animation: none;
+  }
+}
+
+.topbar {
+  height: calc(60px + env(safe-area-inset-top, 0px));
+}
+
+/* Eigenes Feld über der Hand: feste Höhe, Kennzeichen werden darin zentriert. */
+.me .player {
+  height: 56px;
+  align-content: center;
+  overflow: hidden;
+}
+.me .player__tags {
+  height: auto;
+}
+.hand {
+  min-height: calc(var(--cw) * 1.5 + 14px);
+}
+
+@media (max-width: 520px) {
+  .player__tags {
+    height: 52px;
+  }
 }

@@ -92,7 +92,7 @@ export function Table({ view }: { view: RoomView }) {
           ))}
           {showTricks && <span className="tag tag--muted">{h.tricksWon[seat]} {h.tricksWon[seat] === 1 ? 'Stich' : 'Stiche'}</span>}
         </div>
-        {seat !== me && h.handCounts[seat] > 0 && (
+        {seat !== me && (
           <div className="player__backs" aria-label={`${h.handCounts[seat]} Karten`}>
             {Array.from({ length: h.handCounts[seat] }, (_, i) => (
               <CardBack key={i} className="card--mini" />
@@ -128,22 +128,21 @@ export function Table({ view }: { view: RoomView }) {
           <strong>{view.name}</strong>
           <span>Spiel {view.handNo}</span>
         </div>
+        {/* Zwei feste Zeilen, damit die Kopfzeile ihre Höhe nie ändert. */}
         <div className="topbar__game">
-          {h.contract ? (
-            <>
-              <strong>{contractName(h.contract)}</strong>
-              {h.declarer !== null && <span>von {name(h.declarer)}</span>}
-            </>
-          ) : (
-            <span>{h.phase === 'legen' ? 'Legen' : h.phase === 'done' ? '' : 'Reizen'}</span>
-          )}
-          {h.multiplier > 1 && (
-            <span className="mult" title={h.bock ? 'inkl. Verdopplung nach Zusammenwerfen' : undefined}>
-              ×{h.multiplier}
-              {h.bock > 0 && ' (doppelt)'}
-            </span>
-          )}
-          {view.stock > 0 && <span className="chip-stock">Stock {euro(view.stock)}</span>}
+          <strong className="topbar__line">
+            {h.contract ? contractName(h.contract) : h.phase === 'legen' ? 'Legen' : h.phase === 'done' ? 'Spielende' : 'Reizen'}
+          </strong>
+          <span className="topbar__line topbar__sub">
+            {h.contract && h.declarer !== null && <span className="topbar__who">von {name(h.declarer)}</span>}
+            {h.multiplier > 1 && (
+              <span className="mult" title={h.bock ? 'inkl. Verdopplung nach Zusammenwerfen' : undefined}>
+                ×{h.multiplier}
+                {h.bock > 0 && ' (doppelt)'}
+              </span>
+            )}
+            {view.stock > 0 && <span className="chip-stock">Stock {euro(view.stock)}</span>}
+          </span>
         </div>
         <div className="topbar__actions">
           <button className="btn btn--small" disabled={!h.lastTrick} onClick={() => setPeekLast((x) => !x)}>
@@ -157,6 +156,10 @@ export function Table({ view }: { view: RoomView }) {
         {[1, 2, 3].map((r) => (
           <PlayerBox key={r} seat={(me + r) % 4} />
         ))}
+        {/* Abfragen schweben über dem unteren Tischrand und verschieben nichts. */}
+        <div className="action-layer">
+          <ActionPanel view={view} act={act} ready={ready} busy={busy} name={name} />
+        </div>
         <div className="center">
           {shown ? (
             <div className={`trick ${peekLast ? 'trick--peek' : ''}`}>
@@ -179,16 +182,19 @@ export function Table({ view }: { view: RoomView }) {
               )}
             </div>
           ) : (
-            <div className="status">{statusText}</div>
+            statusText && <div className="status">{statusText}</div>
           )}
         </div>
       </div>
 
-      <ActionPanel view={view} act={act} ready={ready} busy={busy} name={name} />
 
       <div className="me">
         <PlayerBox seat={me} />
-        <div className={`hand ${myTurnToPlay ? 'hand--active' : ''}`} style={{ ['--n' as string]: hand.length }}>
+        {/* Kartengröße nach der vollen Hand, damit die Karten beim Ausspielen nicht wachsen. */}
+        <div
+          className={`hand ${myTurnToPlay ? 'hand--active' : ''}`}
+          style={{ ['--n' as string]: view.rules.deck === 'long' ? 8 : 6 }}
+        >
           {hand.map((c) => (
             <CardFace
               key={c}
