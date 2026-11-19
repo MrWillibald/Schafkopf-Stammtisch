@@ -5,6 +5,7 @@ import { euro } from '../format';
 import { call, socket } from '../socket';
 import { ActionPanel } from './ActionPanel';
 import { CardBack, CardFace } from './CardFace';
+import { RenameDialog } from './RenameDialog';
 import { ScoreSheet } from './ScoreSheet';
 
 const POS = ['bottom', 'left', 'top', 'right'] as const;
@@ -19,6 +20,7 @@ export function Table({ view }: { view: RoomView }) {
   const [peekLast, setPeekLast] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [renaming, setRenaming] = useState<{ name: string; seat?: number } | null>(null);
 
   // Abgeschlossenen Stich kurz liegen lassen, damit jeder sieht, wer ihn bekommt.
   // Direkt aus dem Zustand abgeleitet (kein Zwischenbild ohne Karten): Der fertige Stich
@@ -81,11 +83,26 @@ export function Table({ view }: { view: RoomView }) {
     const showTricks = h.phase === 'play' || h.phase === 'done';
     return (
       <div className={`player player--${POS[rel(seat)]} ${h.turn === seat ? 'player--turn' : ''}`}>
-        <div className="player__name">
-          <span className={`dot ${p?.connected ? 'on' : ''}`} />
-          {name(seat)}
-          {seat === me && <span className="tag tag--you">du</span>}
-        </div>
+        {seat === me || (p?.isBot && view.you.isHost) ? (
+          <button
+            type="button"
+            className="player__name player__name--editable"
+            title="Namen ändern"
+            onClick={() => setRenaming({ name: name(seat), seat: seat === me ? undefined : seat })}
+          >
+            <span className={`dot ${p?.connected ? 'on' : ''}`} />
+            <span className="player__label">{name(seat)}</span>
+            {seat === me && <span className="tag tag--you">du</span>}
+            <svg className="player__pen" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M11.5 2.5l2 2L6 12l-2.6.6L4 10z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+            </svg>
+          </button>
+        ) : (
+          <div className="player__name">
+            <span className={`dot ${p?.connected ? 'on' : ''}`} />
+            <span className="player__label">{name(seat)}</span>
+          </div>
+        )}
         <div className="player__tags">
           {tags.map((t) => (
             <span key={t.text} className={`tag ${t.cls ?? ''}`}>{t.text}</span>
@@ -209,6 +226,7 @@ export function Table({ view }: { view: RoomView }) {
 
       {error && <div className="toast" role="alert">{error}</div>}
       {sheet && <ScoreSheet view={view} onClose={() => setSheet(false)} />}
+      {renaming && <RenameDialog current={renaming.name} seat={renaming.seat} onClose={() => setRenaming(null)} />}
     </div>
   );
 }

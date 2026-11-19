@@ -970,10 +970,14 @@ td.minus {
   margin-bottom: 10px;
 }
 
-.seat-remove {
+.seat-actions {
   margin-left: auto;
+  display: flex;
+  gap: 12px;
   font-size: 13px;
   font-weight: 400;
+}
+.seat-actions .link {
   color: var(--muted);
 }
 
@@ -1078,4 +1082,38 @@ td.minus {
   .player__tags {
     height: 52px;
   }
+}
+
+/* Eigenen Namen antippen zum Umbenennen */
+.player__name--editable {
+  background: none;
+  border: 0;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.player__name--editable:hover,
+.player__name--editable:focus-visible {
+  background: rgb(255 255 255 / 0.12);
+  outline: none;
+}
+.player__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.player__pen {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  opacity: 0.7;
+}
+.modal__body--small {
+  max-width: 420px;
+  margin-top: 12vh;
 }

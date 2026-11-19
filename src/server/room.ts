@@ -176,6 +176,33 @@ export class Room {
     return true;
   }
 
+  /**
+   * Namen ändern: jeder seinen eigenen, der Gastgeber zusätzlich die Computer-Mitspieler.
+   * Verlauf und Saldo hängen am Platz und zeigen den neuen Namen automatisch; die
+   * Ruhmeshalle speichert den Namen direkt und wird deshalb mitgeändert.
+   */
+  rename(token: string, name: unknown, seat?: number) {
+    const me = this.requirePlayer(token);
+    const target = seat === undefined || seat === me.seat ? me : this.data.players.find((p) => p.seat === seat);
+    if (!target) throw new RoomError('Diesen Platz gibt es nicht.');
+    if (target !== me && !(target.bot && token === this.data.hostToken))
+      throw new RoomError('Du kannst nur deinen eigenen Namen ändern.');
+    const n = cleanName(name, '');
+    if (!n) throw new RoomError('Bitte gib einen Namen ein.');
+    if (this.data.players.some((p) => p !== target && p.name.toLowerCase() === n.toLowerCase()))
+      throw new RoomError('Dieser Name ist schon vergeben.');
+    const old = target.name;
+    if (n === old) return;
+    target.name = n;
+    for (const e of this.data.sie) {
+      if (e.seat === target.seat || (e.seat === undefined && e.name === old)) {
+        e.name = n;
+        e.seat = target.seat;
+      }
+    }
+    this.touch();
+  }
+
   setRules(token: string, rules: unknown) {
     if (token !== this.data.hostToken) throw new RoomError('Nur wer die Runde angelegt hat, darf die Regeln ändern.');
     if (this.data.status !== 'lobby') throw new RoomError('Die Regeln können nur vor dem ersten Spiel geändert werden.');
@@ -239,7 +266,7 @@ export class Room {
     });
     if (result.sie !== null) {
       const name = this.data.players[result.sie]?.name ?? '?';
-      this.data.sie.push({ name, at, cards: result.hands[result.sie] });
+      this.data.sie.push({ name, seat: result.sie, at, cards: result.hands[result.sie] });
     }
   }
 
