@@ -143,9 +143,7 @@ export function ActionPanel({ view, act, ready, busy, name }: Props) {
         {a.re && (
           <button className="btn btn--hot" disabled={busy} onClick={() => act({ type: 're' })}>Re!</button>
         )}
-        <span className="hint">
-          {a.kontra ? 'nur bevor du deine erste Karte spielst' : 'möglich, bis der erste Stich fertig ist'}
-        </span>
+        <span className="hint">nur bevor du deine erste Karte spielst</span>
       </div>
     );
   }

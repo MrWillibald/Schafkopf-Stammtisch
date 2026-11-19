@@ -229,8 +229,26 @@ describe('Kontra-Zeitpunkt', () => {
     expect([1, 2, 3].map((p) => allowedActions(s, p).kontra)).toEqual([false, true, true]);
     expect(() => applyAction(s, 1, { type: 'kontra' })).toThrow(/Kontra/);
     s = applyAction(s, 3, { type: 'kontra' });
-    // Re für den Spieler geht weiterhin bis zum Ende des ersten Stichs
+    // Der Spieler hat schon ausgespielt → kein Re mehr
+    expect(allowedActions(s, 0).re).toBe(false);
+    expect(() => applyAction(s, 0, { type: 're' })).toThrow(/Re/);
+  });
+
+  it('Re nur, solange man selbst noch keine Karte gespielt hat', () => {
+    let s = skipLegen(handFromCards(rules(), 3, HANDS));
+    s = applyAction(s, 0, { type: 'bid', play: true });
+    for (const p of [1, 2, 3]) s = applyAction(s, p, { type: 'bid', play: false });
+    s = applyAction(s, 0, { type: 'choose', contract: { kind: 'sauspiel', suit: 'E' } });
+    s = applyAction(s, 3, { type: 'kontra' });
+    // Noch niemand hat gespielt: Spieler (0) und Partner (2) dürfen Re geben
     expect(allowedActions(s, 0).re).toBe(true);
+    expect(allowedActions(s, 2).re).toBe(true);
+    s = applyAction(s, 0, { type: 'play', card: allowedActions(s, 0).play[0] });
+    s = applyAction(s, 1, { type: 'play', card: allowedActions(s, 1).play[0] });
+    expect(allowedActions(s, 0).re).toBe(false);
+    expect(allowedActions(s, 2).re).toBe(true);
+    s = applyAction(s, 2, { type: 're' });
+    expect(multiplier(s)).toBe(4);
   });
 });
 

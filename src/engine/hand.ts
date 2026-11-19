@@ -271,9 +271,10 @@ export function allowedActions(s: HandState, seat: number): AllowedActions {
   }
   if (canKontraOrRe(s)) {
     const team = declarerTeam(s);
-    // Kontra nur, solange man selbst noch keine Karte gespielt hat.
-    out.kontra = s.kontra === null && !team.includes(seat) && !hasPlayedCard(s, seat);
-    out.re = s.kontra !== null && s.re === null && team.includes(seat);
+    // Kontra und Re nur, solange man selbst noch keine Karte gespielt hat.
+    const fresh = !hasPlayedCard(s, seat);
+    out.kontra = fresh && s.kontra === null && !team.includes(seat);
+    out.re = fresh && s.kontra !== null && s.re === null && team.includes(seat);
   }
   out.play = legalCards(s, seat);
   return out;
