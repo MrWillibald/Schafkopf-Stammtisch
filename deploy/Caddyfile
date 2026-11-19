@@ -1,0 +1,6 @@
+# Caddy holt für die Domain automatisch ein Let's-Encrypt-Zertifikat und
+# leitet alles (auch die WebSocket-Verbindungen) an die App weiter.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy app:3001
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Schafkopf-Stammtisch",
+  "short_name": "Schafkopf",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1f4d2b",
+  "theme_color": "#1f4d2b",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
