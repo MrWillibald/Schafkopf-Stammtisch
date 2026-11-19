@@ -20,7 +20,8 @@ import {
   sameContract,
   trickWinnerIndex,
 } from './contract';
-import { MAX_LEGEN, MAX_MULTIPLIER, type Rules } from './rules';
+import { preMultiplier, totalMultiplier } from './multiplier';
+import { MAX_LEGEN_MULTIPLIER, MAX_MULTIPLIER, type Rules } from './rules';
 import { type HandResult, scoreHand } from './scoring';
 
 export const PLAYERS = 4;
@@ -123,7 +124,7 @@ export function newHand(rules: Rules, dealer: number, rng: Rng = Math.random, op
     hands.push(mine.slice(0, first));
     pending.push(mine.slice(first));
   }
-  return {
+  const s: HandState = {
     rules,
     dealer,
     phase: 'legen',
@@ -149,6 +150,12 @@ export function newHand(rules: Rules, dealer: number, rng: Rng = Math.random, op
     result: null,
     log: [],
   };
+  // Steht durch Zusammenwerfen schon 8-fach an, bringt Legen nichts mehr.
+  if (preMultiplier(s) >= MAX_LEGEN_MULTIPLIER) {
+    s.legen = [false, false, false, false];
+    finishDeal(s);
+  }
+  return s;
 }
 
 /** Testhilfe: Hand mit vorgegebenen Karten (je 8 bzw. 6) erzeugen. */
@@ -162,15 +169,9 @@ export function handFromCards(rules: Rules, dealer: number, cards: Card[][]): Ha
 
 export const legenCount = (s: HandState): number => s.legen.filter((x) => x === true).length;
 
-/** Faktor aus Legen, Kontra und Re – gedeckelt auf 16-fach. */
-export function capMultiplier(s: HandState): number {
-  const doublings = legenCount(s) + (s.kontra !== null ? 1 : 0) + (s.re !== null ? 1 : 0);
-  return Math.min(MAX_MULTIPLIER, 2 ** doublings);
-}
-
-/** Gesamtfaktor inkl. Verdopplung durch vorheriges Zusammenwerfen. */
+/** Gesamtfaktor: Legen + Zusammenwerfen höchstens 8-fach, mit Kontra/Re höchstens 16-fach. */
 export function multiplier(s: HandState): number {
-  return capMultiplier(s) * 2 ** (s.bock ?? 0);
+  return totalMultiplier(s);
 }
 
 /** Sitze der Spielpartei (Spieler + ggf. Partner). */
@@ -236,7 +237,7 @@ function canKontraOrRe(s: HandState): boolean {
     s.contract !== null &&
     s.contract.kind !== 'ramsch' &&
     s.tricks.length === 0 &&
-    capMultiplier(s) < MAX_MULTIPLIER
+    multiplier(s) < MAX_MULTIPLIER
   );
 }
 
@@ -311,7 +312,8 @@ function doLegen(s: HandState, seat: number, yes: boolean) {
   requireTurn(s, seat, 'legen');
   s.legen[seat] = yes;
   if (yes) s.log.push({ seat, text: 'legt' });
-  if (legenCount(s) >= MAX_LEGEN) for (let p = 0; p < PLAYERS; p++) if (s.legen[p] === null) s.legen[p] = false;
+  // Legen und Zusammenwerfen zusammen höchstens 8-fach: dann wird niemand mehr gefragt.
+  if (preMultiplier(s) >= MAX_LEGEN_MULTIPLIER) for (let p = 0; p < PLAYERS; p++) if (s.legen[p] === null) s.legen[p] = false;
   const n = next(seat);
   if (n !== vorhand(s) && s.legen[n] === null) {
     s.turn = n;

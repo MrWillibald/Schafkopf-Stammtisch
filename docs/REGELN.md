@@ -25,8 +25,9 @@ Die Regeln kann der Gastgeber bis zum ersten Spiel ändern.
 
 1. **Geben**: Der Geber wechselt jedes Spiel im Uhrzeigersinn. Vorhand ist links vom Geber.
 2. **Legen**: Nach den ersten 4 Karten (kurzes Blatt: 3) entscheidet jeder ab Vorhand,
-   ob er legt. Jedes Legen verdoppelt. **Höchstens dreimal → 8-fach.** Danach wird nicht
-   mehr gefragt.
+   ob er legt. Jedes Legen verdoppelt. **Legen und eine Verdopplung durch Zusammenwerfen
+   zählen zusammen höchstens 8-fach.** Ist 8-fach erreicht, wird nicht mehr gefragt (steht
+   z. B. schon ×2 aus dem Zusammenwerfen an, dürfen nur noch zwei legen).
 3. **Rest geben**. Hat jemand alle vier Ober und alle vier Unter, ist das eine **Sie**
    (nur langes Blatt): Sie wird in der Ruhmeshalle verewigt, **nicht gespielt und nicht
    ausbezahlt**, der nächste Geber gibt.
@@ -43,7 +44,7 @@ Die Regeln kann der Gastgeber bis zum ersten Spiel ändern.
    zusätzlich **Tout** ansagen (kein eigenes Spiel, sondern eine Zusatzansage; nicht zum Sauspiel).
 6. **Kontra / Re**: Die Gegenspieler können Kontra geben, die Spielpartei danach Re –
    jeweils verdoppelnd und **solange der erste Stich nicht fertig ist**. Der Gesamtfaktor
-   ist auf **16-fach** gedeckelt: Bei 8-fach gelegt geht also nur noch Kontra.
+   ist auf **16-fach** gedeckelt: Bei 8-fach geht also nur noch Kontra, kein Re mehr.
 7. **Spielen**: Farbe bzw. Trumpf muss bedient werden.
 
 ## Trümpfe
@@ -85,10 +86,10 @@ ist einstellbar:
 
 - **Nichts**: einfach neu geben.
 - **Nächstes Spiel doppelt**: Das nächste tatsächlich gespielte Spiel zählt doppelt. Wird
-  mehrmals hintereinander zusammengeworfen, verdoppelt es sich weiter (×2, ×4, …). Diese
-  Verdopplung kommt **zusätzlich** zu Legen/Kontra/Re und zählt nicht zum 16-fach-Deckel –
-  Kontra bleibt also möglich, solange Legen allein unter 16-fach liegt. Eine Sie verbraucht
-  die Verdopplung nicht.
+  mehrmals hintereinander zusammengeworfen, verdoppelt es sich weiter (×2, ×4, ×8). Legen und
+  Zusammenwerfen zählen **zusammen höchstens 8-fach**; nur Kontra/Re können dann noch auf
+  16-fach verdoppeln. Bei 16-fach ist in jedem Fall Schluss. Eine Sie verbraucht die
+  Verdopplung nicht.
 - **Stock**: Jeder zahlt den eingestellten Betrag in den Stock. Der Stock wird mit dem
   **nächsten gewonnenen Sauspiel** ausbezahlt und zu gleichen Teilen an die Spielpartei
   verteilt. Verlorene Sauspiele, Soli und Ramsch lassen den Stock liegen.

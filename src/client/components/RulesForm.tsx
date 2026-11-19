@@ -91,7 +91,7 @@ export function RulesForm({ rules, onChange, disabled }: Props) {
             {(
               [
                 ['none', 'Nichts', 'Es wird einfach neu gegeben.'],
-                ['double', 'Nächstes Spiel doppelt', 'Wird mehrmals hintereinander zusammengeworfen, verdoppelt es sich weiter.'],
+                ['double', 'Nächstes Spiel doppelt', 'Mehrmals hintereinander verdoppelt weiter. Zusammen mit Legen höchstens 8-fach.'],
                 ['stock', 'Stock', 'Jeder zahlt in den Stock. Das nächste gewonnene Sauspiel bekommt ihn.'],
               ] as const
             ).map(([value, label, help]) => (
@@ -134,7 +134,7 @@ export function RulesForm({ rules, onChange, disabled }: Props) {
             </select>
           </label>
         </div>
-        <p className="hint">Legen nach den ersten {rules.deck === 'long' ? 'vier' : 'drei'} Karten, bis 8-fach. Mit Kontra/Re höchstens 16-fach.</p>
+        <p className="hint">Legen nach den ersten {rules.deck === 'long' ? 'vier' : 'drei'} Karten, bis 8-fach (zusammen mit einer Verdopplung nach dem Zusammenwerfen). Mit Kontra/Re höchstens 16-fach.</p>
       </fieldset>
     </div>
   );

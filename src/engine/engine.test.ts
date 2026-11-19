@@ -222,17 +222,45 @@ describe('Zusammenwerfen: doppelt und Stock', () => {
     return { ...s, contract: { kind: 'sauspiel', suit: 'E' }, declarer: 0, partner: 2, tricks, ...patch };
   };
 
-  it('Verdopplung aus Zusammenwerfen zählt zusätzlich zum 16-fach-Deckel', () => {
+  it('Legen und Zusammenwerfen zusammen höchstens 8-fach, mit Kontra höchstens 16-fach', () => {
     let s = skipLegen(handFromCards(rules(), 3, HANDS));
     s = applyAction(s, 0, { type: 'bid', play: true });
     s = applyAction(s, 1, { type: 'bid', play: false });
     s = applyAction(s, 2, { type: 'bid', play: false });
     s = applyAction(s, 3, { type: 'bid', play: false });
-    s = { ...s, bock: 1, legen: [true, true, true, false] }; // 8-fach gelegt (hier direkt gesetzt)
+    s = { ...s, bock: 1, legen: [true, true, true, false] }; // doppelt + 3× gelegt (hier direkt gesetzt)
     s = applyAction(s, 0, { type: 'choose', contract: { kind: 'sauspiel', suit: 'E' } });
+    expect(multiplier(s)).toBe(8);
+    s = applyAction(s, 1, { type: 'kontra' });
     expect(multiplier(s)).toBe(16);
-    s = applyAction(s, 1, { type: 'kontra' }); // Kontra ist noch erlaubt: Legen allein ergibt 8-fach
-    expect(multiplier(s)).toBe(32);
+    expect(allowedActions(s, 0).re).toBe(false); // bei 16-fach ist Schluss
+  });
+
+  it('nach Zusammenwerfen (doppelt) dürfen nur noch zwei legen', () => {
+    let s = newHand(rules(), 3, mulberry32(5), { bock: 1 });
+    s = applyAction(s, 0, { type: 'legen', yes: true });
+    s = applyAction(s, 1, { type: 'legen', yes: true });
+    expect(s.phase).toBe('bid');
+    expect(s.legen).toEqual([true, true, false, false]);
+    expect(multiplier(s)).toBe(8);
+  });
+
+  it('steht schon 8-fach an, wird gar nicht nach dem Legen gefragt', () => {
+    const s = newHand(rules(), 3, mulberry32(5), { bock: 3 });
+    expect(s.phase === 'bid' || s.phase === 'done').toBe(true);
+    expect(s.hands.every((h) => h.length === 8)).toBe(true);
+    expect(multiplier(s)).toBe(8);
+  });
+
+  it('ohne Zusammenwerfen: dreimal gelegt 8-fach, Kontra 16-fach, kein Re', () => {
+    let s = skipLegen(handFromCards(rules(), 3, HANDS));
+    s = applyAction(s, 0, { type: 'bid', play: true });
+    for (const p of [1, 2, 3]) s = applyAction(s, p, { type: 'bid', play: false });
+    s = { ...s, legen: [true, true, true, false] };
+    s = applyAction(s, 0, { type: 'choose', contract: { kind: 'sauspiel', suit: 'E' } });
+    s = applyAction(s, 3, { type: 'kontra' });
+    expect(multiplier(s)).toBe(16);
+    expect(allowedActions(s, 2).re).toBe(false);
   });
 
   it('Stock: beim Zusammenwerfen zahlt jeder ein', () => {
@@ -444,7 +472,7 @@ describe('Zufallsspiele (Fuzz)', () => {
       });
       const kinds = new Set<string>();
       for (let i = 0; i < 1500; i++) {
-        let s = newHand(r, i % 4, rng);
+        let s = newHand(r, i % 4, rng, { bock: i % 4 });
         let steps = 0;
         while (s.phase !== 'done') {
           const [seat, action] = randomAction(s, rng);

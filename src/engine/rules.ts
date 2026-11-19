@@ -40,7 +40,9 @@ export interface Rules {
 
 /** Maximal dreimal Legen → 8-fach. */
 export const MAX_LEGEN = 3;
-/** Gesamtdeckel für Legen + Kontra + Re. Bei 8-fach gelegt geht also nur noch Kontra. */
+/** Legen und Verdopplung durch Zusammenwerfen zählen zusammen höchstens 8-fach. */
+export const MAX_LEGEN_MULTIPLIER = 8;
+/** Kontra/Re verdoppeln weiter – bei 16-fach ist in jedem Fall Schluss. */
 export const MAX_MULTIPLIER = 16;
 
 export const DEFAULT_RULES: Rules = {

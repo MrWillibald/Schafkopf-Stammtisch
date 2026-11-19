@@ -30,6 +30,6 @@ export function rulesSummary(r: Rules): string[] {
             : 'Zusammenwerfen'
     }`,
     `Tarif: Spiel ${euro(r.tariff.game)}, Solo ${euro(r.tariff.solo)}, Laufende ${euro(r.tariff.laufende)} (ab ${r.laufendeMin}, Wenz/Geier ab ${r.laufendeMinWenzGeier}), Schneider/Schwarz ${euro(r.tariff.schneider)}`,
-    'Legen bis 8-fach, mit Kontra höchstens 16-fach',
+    'Legen (und Verdopplung nach Zusammenwerfen) zusammen höchstens 8-fach, mit Kontra/Re höchstens 16-fach',
   ];
 }

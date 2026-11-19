@@ -1,7 +1,7 @@
 import { type Card, augenOf, makeDeck } from './cards';
 import { type Contract, isSolo, trumpOrder } from './contract';
 import type { HandState } from './hand';
-import { MAX_MULTIPLIER } from './rules';
+import { totalMultiplier } from './multiplier';
 
 export interface HandResult {
   kind: 'game' | 'ramsch' | 'redeal' | 'sie';
@@ -35,10 +35,7 @@ export interface HandResult {
   hands: Card[][];
 }
 
-function baseMultiplier(s: HandState): number {
-  const n = s.legen.filter((x) => x === true).length + (s.kontra !== null ? 1 : 0) + (s.re !== null ? 1 : 0);
-  return Math.min(MAX_MULTIPLIER, 2 ** n) * 2 ** (s.bock ?? 0);
-}
+const baseMultiplier = (s: HandState): number => totalMultiplier(s);
 
 /** Laufende: ununterbrochene höchste Trümpfe einer Partei (ab Mindestanzahl). */
 export function countLaufende(s: HandState, team: number[]): number {

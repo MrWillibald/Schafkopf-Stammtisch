@@ -224,7 +224,8 @@ export class Room {
     this.data.stock = (this.data.stock ?? 0) + result.stockDelta;
     // Verdopplung nach Zusammenwerfen: gilt für das nächste tatsächlich gespielte Spiel.
     const bock = hand.bock ?? 0;
-    if (result.kind === 'redeal') this.data.pendingDoubles = bock + (this.data.rules.redeal === 'double' ? 1 : 0);
+    // Mehr als 8-fach (3 Verdopplungen) kann Zusammenwerfen nicht bringen.
+    if (result.kind === 'redeal') this.data.pendingDoubles = Math.min(3, bock + (this.data.rules.redeal === 'double' ? 1 : 0));
     else if (result.kind === 'sie') this.data.pendingDoubles = bock;
     else this.data.pendingDoubles = 0;
     const at = new Date().toISOString();
